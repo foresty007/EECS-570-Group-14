@@ -5,18 +5,22 @@
 -- Constants
 ----------------------------------------------------------------------
 const
-  ProcCount: 6;          -- number processors, def:P0 & P1 are home 
-  HomeCount: 2           -- number home
+  ProcCount: 6;          -- number processors, def:P0 & P1 are home
+  HomeCount: 2;          -- number home
   ValueCount: 2;         -- number of data values.
-  D2H_REQ: 0; 
-  H2D_REQ: 1;               
-  D2H_DTA: 2;
-  D2H_RSP: 3;               
-  H2D_DTA: 4;
+  AddrCount: 2;          -- number of adddress
+  D2H_REQ: 0;
+  H2D_REQ: 1;
+  D2H_DATA: 2;
+  D2H_RSP: 3;
+  H2D_DATA: 4;
   H2D_RSP: 5;
   QMax: 6;
   NumVCs: 6;
   NetMax: ProcCount*2+1;
+
+
+  MaxUQID: 1; --Mingjian Li
   
 
 ----------------------------------------------------------------------
@@ -24,15 +28,22 @@ const
 ----------------------------------------------------------------------
 type
   Proc: scalarset(ProcCount);   -- unordered range of processors
-  Home: scalarset(HomeCount);   -- 
+  Home: enum{ Home0, Home1 };   -- 
+  
+  CQIDType: 0..MaxUQID;
+  UQIDType: 0..MaxUQID;         --Mingjian Li
+  MESIType: enum { M, E, S, I };
+  RspData: union { uq: UQIDType; mesi: MESIType };
+  
   Value: scalarset(ValueCount); -- arbitrary values for tracking coherence
+  Address: scalarset{AddrCount}; 
   -- Home: enum { HomeType };      -- need enumeration for IsMember calls
   Node: union { Home , Proc };
 
   VCType: VC0..NumVCs-1;
   SharerNum: 0..ProcCount;
   MessageType: enum { 
-                      D2H_REQ
+                      --D2H_REQUEST
                       RdCurr,
                       RdOwn,
                       RdShared,
@@ -48,7 +59,7 @@ type
                       -- WOWrInvF,
                       WrInv,
                       CacheFlushed,
-                      -- D2H_RESP
+                      -- D2H_RESPONSE
                       RspIHitI,
                       RspVHitV,
                       RspIHitSE,
@@ -56,7 +67,7 @@ type
                       RspSFwdM,
                       RspIFwdM,
                       RspVFwdV,
-                      -- H2D_RESP
+                      -- H2D_RESPONSE
                       WritePull,
                       GO,
                       GO_WritePull,
@@ -65,21 +76,45 @@ type
                       Reserved,
                       Fast_GO_WritePull,
                       GO_ERR_WritePull,
-                      -- H2D_REQ
+                      -- H2D_REQUEST
                       SnpData,
                       SnpInv,
-                      SnpCur
+                      SnpCur,
+                      -- DATA
+                      Data
                     };
 
   Message:
     Record
+      valid: 0..1;      -- exclusive to D2H_REQ, H2D_RSP, H2D_REQ, D2H_RSP
+      
       mtype: MessageType;
-      src: Node;
-      -- do not need a destination for verification; the destination is indicated by which array entry in the Net the message is placed
+      src: Node;        -- do not need a destination for verification; the destination is indicated by which array entry in the Net the message is placed
       vc: VCType;
-      val: Value;
+
+      cqid:  CQIDType;  -- exclusive to D2H_REQ, H2D_RSP, H2D_DATA
+
+      uqid:  UQIDType;  -- exclusive to D2H_RSP, D2H_DATA, H2D_REQ
+      
+      nt:    0..1;      -- exclusive to D2H_REQ
+
+      chunkvalid: 0..1; -- exclusive to D2H_DATA, H2D_DATA
+      poison:     0..1; -- exclusive to D2H_DATA, H2D_DATA
+      
+      bogus:      0..1; -- exclusive to D2H_DATA
+      
+      go_err:     0..1; -- exclusive to H2D_DATA
+      
+      rspdata: RspData; -- exclusive to H2D_RSP  -- MESI is defined as enum of {M, E, S, I}
+      rsp_pre:    0..3; -- exclusive to H2D_RSP
+
+      val: Value;       -- exclusive to D2H_DATA, H2D_DATA
+      
+      addr: Address;    -- exclusive to D2H_REQ, H2D_REQ
+      
+
       -- fwd_dst: Node;  -- for InvalidateReq and FwdMReq
-      num_sharer: SharerNum; -- optional, tells requester how many InvalidateAcks to expect
+      -- num_sharer: SharerNum; -- optional, tells requester how many InvalidateAcks to expect
     End;
 
   HomeState:
@@ -97,6 +132,7 @@ type
 							HT_SI_A,
               HT_SE_A,
               HT_II_D,
+              HT_IS_A,  --Added on 11/20/2025 
               HT_MI_AD, -- only for CLFlush
               HT_MI_D,
               HT_MI_A,
@@ -134,10 +170,6 @@ type
       --             };
       state: enum { 
               -- steady state
-              Proc_E
-                case 
-                HomeNode0.val = src.msg
-
               P_M, 
               P_E, 
               P_S, 
@@ -185,8 +217,10 @@ Procedure Send(mtype:MessageType;
 	       src:Node;
          vc:VCType;
          val:Value;
+         addr:Address;
          -- fwd_dst: Node;
          num_sharer: SharerNum;
+         rspdata: RspData;
          );
 var msg:Message;
 Begin
@@ -213,36 +247,47 @@ End;
 /*
 -- These aren't needed for Valid/Invalid protocol, but this is a good way of writing these functions
 */
-Procedure AddToSharersList(n:Node);
+-- modified by Jiahe, 2 address
+Procedure AddToSharersList(n:Node, h: Home);
 Begin
-  if MultiSetCount(i:HomeNode.sharers, HomeNode.sharers[i] = n) = 0
-  then
-    MultiSetAdd(n, HomeNode.sharers);
-  endif;
+    if MultiSetCount(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n) = 0 then
+      MultiSetAdd(n, HomeNodes[h].sharers);
+    endif;
 End;
 
-Function IsSharer(n:Node) : Boolean;
+-- modified by Jiahe, 2 address
+Function IsSharer(n:Node, h: Home) : Boolean;
 Begin
-  return MultiSetCount(i:HomeNode.sharers, HomeNode.sharers[i] = n) > 0
+    return MultiSetCount(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n) > 0;
 End;
 
-Procedure RemoveFromSharersList(n:Node);
+Function IsSharerListEmpty(h: Home): Boolean;
 Begin
-  MultiSetRemovePred(i:HomeNode.sharers, HomeNode.sharers[i] = n);
+  return MultiSetCount(i:HomeNode[h].sharers, true) = 0
+End;
+
+Procedure RemoveFromSharersList(n:Node, h: Home);
+Begin
+  if addr = 0 then
+    MultiSetRemovePred(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n);
+  else  
+    MultiSetRemovePred(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n);
+  endif
 End;
 
 -- Sends a message to all sharers except rqst
-Procedure SendInvReqToSharers(rqst:Node);
+-- modified by Jiahe, 2 address
+Procedure SendInvReqToSharers(rqst:Node, h: Home);
 Begin
   for n:Node do
     if (IsMember(n, Proc) &
-        MultiSetCount(i:HomeNode.sharers, HomeNode.sharers[i] = n) != 0)
+        MultiSetCount(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n) != 0)
     then
-      RemoveFromSharersList(n);
+      RemoveFromSharersList(n, h);
       if n != rqst
       then 
         -- Send invalidation message here 
-        Send(InvalidReq, n, HomeType, VC1, UNDEFINED, rqst, UNDEFINED);
+        Send(InvalidReq, n, h, VC1, UNDEFINED, rqst, UNDEFINED);
         
       endif;
     endif;
@@ -251,70 +296,119 @@ End;
 
 
 
-Procedure HomeReceive(msg:Message, h:Home);
+Procedure HomeReceive(msg:Message, h:Home); --TODO:
 var cnt:0..ProcCount;  -- for counting sharers
 Begin
+alias hs:HomeNodes[h].state do
+alias hv:HomeNodes[h].val do
+
 -- Debug output may be helpful:
 --  put "Receiving "; put msg.mtype; put " on VC"; put msg.vc; 
---  put " at home -- "; put HomeNode.state;
+--  put " at home -- "; put HomeNodes.state;
 
   -- The line below is not needed in Valid/Invalid protocol.  However, the 
   -- compiler barfs if we put this inside a switch, so it is useful to
   -- pre-calculate the sharer count here
-  cnt := MultiSetCount(i:HomeNode.sharers, true);
-  -- num_sharer := MultiSetCount(i:HomeNode.sharers, true);
+  cnt := MultiSetCount(i:HomeNodes[h].sharers, true);
+  -- num_sharer := MultiSetCount(i:HomeNodes.sharers, true);
 
   -- default to 'processing' message.  set to false otherwise
   msg_processed := true;
 
-  switch HomeNode.state
-  case H_Invalid:
-    switch msg.mtype
+  switch HomeNodes.state
+  case H_I:  -- Author: Yi Dong 11/20/2025
+    switch msg.mtype 
 
-    case ReadReq:
-      HomeNode.state := H_Shared;
-      AddToSharersList(msg.src);
-      Send(ReadAck, msg.src, HomeType, VC2, HomeNode.val, UNDEFINED, UNDEFINED);
-    case ReadReqX:
-      HomeNode.state := H_Modified;
-      HomeNode.owner := msg.src;
-      Send(ReadAck, msg.src, HomeType, VC2, HomeNode.val, UNDEFINED, 0);
+    -- case ReadReq:
+    --   HomeNodes.state := H_Shared;
+    --   AddToSharersList(msg.src);
+    --   Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, UNDEFINED);
+    -- case ReadReqX:
+    --   HomeNodes.state := H_Modified;
+    --   HomeNodes.owner := msg.src;
+    --   Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, 0);
+    case RdCurr: --get the most current data, not change the existing state in any cache
+      HomeNodes.state := H_I;
+      Send(Data, msg.src, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+    
+    case CLFlush: --invalidate the cacheline specifiedin the address field. The typical response is GO-I
+      HomeModes.state := H_I;
+      Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, I);
+    
+    case ItoMWr: --requests exclusive ownership of the cacheline address, writes the cacehline back to the Host. typical response is GO_WritePull
+      HomeNodes.state := HT_II_D;
+      HomeNodes.flag := flag_EI_D;
+      Send(GO_WritePull, msg.src, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED);
+    
+    case RdShared: --requests from the device for lines to be cached in Shared state.a
+      HomeNodes.state := HT_IS_A; -- need to wait for notification when transfer from I to S
+      
+      
+      
+      
+      
+      
+    
+    case 
+    
     else
       ErrorUnhandledMsg(msg, HomeType);
     
 
     endswitch;
 
-
-  case H_Shared: 
-    Assert (IsUndefined(HomeNode.owner) = true) 
-       "HomeNode has owner, but line is Shared";
+  case H_E:
+    
+  -- Jiahe
+  case H_S: 
+    Assert (IsUndefined(HomeNodes[h].owner) = true) 
+       "HomeNodes has owner, but line is Shared";
     Assert (cnt != 0) 
-       "HomeNode has no sharer, but line is Shared";
+       "HomeNodes has no sharer, but line is Shared";
 
     switch msg.mtype
-    case ReadReq:
-      if (IsSharer(msg.src) = false) then
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNode.val, UNDEFINED, UNDEFINED);
-        AddToSharersList(msg.src);
-      else 
-        msg_processed := false;
-      endif;
-    case ReadReqX:
+    case RdShared:
+      -- whether requester is a sharer or not, it can receive the data
+      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      AddToSharersList(msg.src, h);
+    
+    case RdAny:
+      -- define: RdAny receive a S-state cacheline
+      -- whether requester is a sharer or not, it can receive the data
+      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      AddToSharersList(msg.src, h);
+
+    case RdCur:
+      -- read the current line, the requester could not cache it (Proc still in P_I)
+      -- no rsp from host, only data
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      
+  
+    case RdOwnNoData:
+      -- upgrade the requester to E
+      -- sharer or not, requester can receive the data
+      if (cnt = 1) & IsSharer(msg.src, h) then
+        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+        Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+        AddToSharersList(msg.src, h);
+
+
       if (IsSharer(msg.src)) then
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNode.val, UNDEFINED, cnt-1);
+        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt-1);
         if cnt = 1 then 
-          HomeNode.state := H_Modified;
+          HomeNodes.state := H_Modified;
         else 
-          HomeNode.state := HT_SMPENDING;
+          HomeNodes.state := HT_SMPENDING;
         endif;
-        HomeNode.owner := msg.src; --remember who the new owner will be
+        HomeNodes.owner := msg.src; --remember who the new owner will be
         SendInvReqToSharers(msg.src);
       else
-        HomeNode.state := HT_SMPENDING;
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNode.val, UNDEFINED, cnt);
+        HomeNodes.state := HT_SMPENDING;
+        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt);
 
-        HomeNode.owner := msg.src; --remember who the new owner will be
+        HomeNodes.owner := msg.src; --remember who the new owner will be
         SendInvReqToSharers(msg.src);
       endif;
 
@@ -324,9 +418,9 @@ Begin
         RemoveFromSharersList(msg.src);
 
         if cnt = 1 then -- originally 1 but reduced 1
-          HomeNode.state := H_Invalid;
+          HomeNodes.state := H_Invalid;
         else  
-          HomeNode.state := H_Shared;
+          HomeNodes.state := H_Shared;
         endif;
       endif;
     else
@@ -337,17 +431,17 @@ Begin
   case HT_SMPENDING:
     switch msg.mtype
     case SMAck:
-      HomeNode.state := H_Modified;
+      HomeNodes.state := H_Modified;
     case PutS:
-      Send(InvalidAck, HomeNode.owner, HomeType, VC2, UNDEFINED, UNDEFINED, UNDEFINED);
+      Send(InvalidAck, HomeNodes.owner, HomeType, VC2, UNDEFINED, UNDEFINED, UNDEFINED);
     case ReadReq:
     	msg_processed := false; -- stall message in InBox
     case ReadReqX:
     	msg_processed := false; -- stall message in InBox
     case WBReq:
-      HomeNode.state := HT_IIPENDING;
-      undefine HomeNode.owner;
-      HomeNode.val := msg.val;
+      HomeNodes.state := HT_IIPENDING;
+      undefine HomeNodes.owner;
+      HomeNodes.val := msg.val;
     else
       ErrorUnhandledMsg(msg, HomeType);
 
@@ -356,7 +450,7 @@ Begin
   case HT_IIPENDING:
     switch msg.mtype
     case SMAck:
-      HomeNode.state := H_Invalid;
+      HomeNodes.state := H_Invalid;
     case ReadReq:
     	msg_processed := false; -- stall message in InBox
     case ReadReqX:
@@ -366,35 +460,36 @@ Begin
 
     endswitch;
   
-  case H_Modified:
-    Assert (IsUndefined(HomeNode.owner) = false) 
-       "HomeNode has no owner, but line is Modified";
+  case H_M: -- Author: Ruihan 11/20
+    Assert (IsUndefined(HomeNodes.owner) = false) 
+       "HomeNodes has no owner, but line is Modified";
 
     switch msg.mtype
-    case ReadReq:
-      Assert(HomeNode.owner != msg.src)
-        "ProcNode is already an owner but sending readreq";
-      HomeNode.state := HT_SPending;     
-      Send(FwdSReq, HomeNode.owner, HomeType, VC1, UNDEFINED, msg.src, UNDEFINED);
-      AddToSharersList(HomeNode.owner);
-      AddToSharersList(msg.src);
-      undefine HomeNode.owner;
+    case RdCurr:
+      hs := H_M;
+      Send(Data, msg.src, HomeType, H2D_DATA, hv, UNDEFINED, 0);
+      
+    case CLFlush:
+      hs := HT_MI_AD;
+      Send(GO, msg.src, hs, D2H_RSP, UNDEFINED, UNDEFINED, 0, I);
+    
+    case DirtyEvict:
+      hs := HT_MI_AD;
+      Send(GO_WritePull, msg.src, hs, D2H_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);      
 
-    case ReadReqX: 
-      Assert(HomeNode.owner != msg.src)
-        "ProcNode is already an owner but sending readreqx";
-      HomeNode.state := HT_MPending; 
-      Send(FwdMReq, HomeNode.owner, HomeType, VC1, UNDEFINED, msg.src, UNDEFINED);
-      HomeNode.owner := msg.src;
-    case WBReq:
-      Assert (!IsUnDefined(HomeNode.owner)) "owner undefined";
-      if (msg.src = HomeNode.owner) then
-        HomeNode.state := H_Invalid;
-        HomeNode.val := msg.val;
-        Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-        undefine HomeNode.owner;
-      endif;
-
+    case WrInv:
+      hs := HT_MI_AD;
+      Send(WritePull, msg.src, hs, D2H_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+    
+    case ItoMWr:
+      hs := HT_ME_AD;
+      HomeNodes[h].flag := flag_EI_D;
+      Send(GO_WritePull, msg.src, hs, D2H_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+    
+    case RdOwn:
+      hs := HT_ME_AD;
+      Send(GO_WritePull, msg.src, hs, D2H_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+      
     else
       ErrorUnhandledMsg(msg, HomeType);
 
@@ -404,22 +499,22 @@ Begin
     switch msg.mtype
    
     case WBReq:
-      Assert (!IsUnDefined(HomeNode.owner)) "owner undefined";
-      if(HomeNode.owner = msg.src) then
+      Assert (!IsUnDefined(HomeNodes.owner)) "owner undefined";
+      if(HomeNodes.owner = msg.src) then
         Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-        HomeNode.val := msg.val;
-        undefine HomeNode.owner;
+        HomeNodes.val := msg.val;
+        undefine HomeNodes.owner;
       else 
-        HomeNode.state := H_Modified;
-        HomeNode.val := msg.val;
-        Send(ReadAck, HomeNode.owner, HomeType, VC2, HomeNode.val, UNDEFINED, 0);
+        HomeNodes.state := H_Modified;
+        HomeNodes.val := msg.val;
+        Send(ReadAck, HomeNodes.owner, HomeType, VC2, HomeNodes.val, UNDEFINED, 0);
       endif;
     case WBFwd:
-      if (IsUnDefined(HomeNode.owner)) then
-        HomeNode.state := H_Invalid;
+      if (IsUnDefined(HomeNodes.owner)) then
+        HomeNodes.state := H_Invalid;
       else 
-        HomeNode.state := H_Modified;
-        HomeNode.val := msg.val;
+        HomeNodes.state := H_Modified;
+        HomeNodes.val := msg.val;
       endif;
     case ReadReq:
     	msg_processed := false; -- stall message in InBox
@@ -434,25 +529,25 @@ Begin
     switch msg.mtype
    
     case WBReq:
-      Assert (IsUnDefined(HomeNode.owner)&(cnt !=0)) "owner and sharer all undefined";
-      HomeNode.state := H_Shared;
-      HomeNode.val := msg.val;
+      Assert (IsUnDefined(HomeNodes.owner)&(cnt !=0)) "owner and sharer all undefined";
+      HomeNodes.state := H_Shared;
+      HomeNodes.val := msg.val;
       
       RemoveFromSharersList(msg.src);
       
       for n:Node do
         if (IsMember(n, Proc) & IsSharer(n)) then
-          Send(ReadAck, n, HomeType, VC2, HomeNode.val, UNDEFINED, UNDEFINED);
+          Send(ReadAck, n, HomeType, VC2, HomeNodes.val, UNDEFINED, UNDEFINED);
         endif;
       endfor;
 
     case WBShared:
       if (cnt != 0) then
-        HomeNode.state := H_Shared;
-        HomeNode.val := msg.val;
+        HomeNodes.state := H_Shared;
+        HomeNodes.val := msg.val;
       else 
-        HomeNode.state := H_Invalid;
-        HomeNode.val := msg.val;
+        HomeNodes.state := H_Invalid;
+        HomeNodes.val := msg.val;
       endif;
 
     case ReadReq:
@@ -470,6 +565,8 @@ Begin
 
     endswitch;
   endswitch;
+  endalias;
+  endalias;
 End;
 
 
@@ -798,12 +895,12 @@ startstate
 
 	For v:Value do
   -- home node initialization
-  HomeNode.state := H_Invalid;
-  undefine HomeNode.owner;
-  undefine HomeNode.sharers;
-  HomeNode.val := v;
+  HomeNodes.state := H_Invalid;
+  undefine HomeNodes.owner;
+  undefine HomeNodes.sharers;
+  HomeNodes.val := v;
 	endfor;
-	LastWrite := HomeNode.val;
+	LastWrite := HomeNodes.val;
   
   -- processor initialization
   for i:Proc do
@@ -821,39 +918,39 @@ endstartstate;
 ----------------------------------------------------------------------
 
 invariant "Invalid implies empty owner"
-  HomeNode.state = H_Invalid
+  HomeNodes.state = H_Invalid
     ->
-      IsUndefined(HomeNode.owner);
+      IsUndefined(HomeNodes.owner);
 
 invariant "value in memory matches value of last write, when invalid"
-     HomeNode.state = H_Invalid 
+     HomeNodes.state = H_Invalid 
     ->
-			HomeNode.val = LastWrite;
+			HomeNodes.val = LastWrite;
 
 -- Here are some invariants that are helpful for validating shared state.
 
 invariant "modified implies empty sharers list"
-  HomeNode.state = H_Modified
+  HomeNodes.state = H_Modified
     ->
-      MultiSetCount(i:HomeNode.sharers, true) = 0;
+      MultiSetCount(i:HomeNodes.sharers, true) = 0;
 
 invariant "Invalid implies empty sharer list"
-  HomeNode.state = H_Invalid
+  HomeNodes.state = H_Invalid
     ->
-      MultiSetCount(i:HomeNode.sharers, true) = 0;
+      MultiSetCount(i:HomeNodes.sharers, true) = 0;
 
 invariant "values in memory matches value of last write, when shared or invalid"
   Forall n : Proc Do	
-     HomeNode.state = H_Shared | HomeNode.state = H_Invalid
+     HomeNodes.state = H_Shared | HomeNodes.state = H_Invalid
     ->
-			HomeNode.val = LastWrite
+			HomeNodes.val = LastWrite
 	end;
 
 invariant "values in shared state match memory"
   Forall n : Proc Do	
-     HomeNode.state = H_Shared & Procs[n].state = P_Shared
+     HomeNodes.state = H_Shared & Procs[n].state = P_Shared
     ->
-			HomeNode.val = Procs[n].val
+			HomeNodes.val = Procs[n].val
 	end;
 
 invariant "at most one flag = 1"
