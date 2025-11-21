@@ -402,6 +402,7 @@ Begin
 
   case P_I:
       ErrorUnhandledMsg(msg, p);
+      HomeNode.val := 1;
     
 
   case P_S:

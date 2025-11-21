@@ -5,13 +5,17 @@
 -- Constants
 ----------------------------------------------------------------------
 const
-  ProcCount: 3;          -- number processors
-  ValueCount:   2;       -- number of data values.
-  VC0: 0;                -- low priority
-  VC1: 1;
-  VC2: 2;
-  QMax: 3;
-  NumVCs: VC2 - VC0 + 1;
+  ProcCount: 6;          -- number processors, def:P0 & P1 are home 
+  HomeCount: 2           -- number home
+  ValueCount: 2;         -- number of data values.
+  D2H_REQ: 0; 
+  H2D_REQ: 1;               
+  D2H_DTA: 2;
+  D2H_RSP: 3;               
+  H2D_DTA: 4;
+  H2D_RSP: 5;
+  QMax: 6;
+  NumVCs: 6;
   NetMax: ProcCount*2+1;
   
 
@@ -20,25 +24,51 @@ const
 ----------------------------------------------------------------------
 type
   Proc: scalarset(ProcCount);   -- unordered range of processors
+  Home: scalarset(HomeCount);   -- 
   Value: scalarset(ValueCount); -- arbitrary values for tracking coherence
-  Home: enum { HomeType };      -- need enumeration for IsMember calls
+  -- Home: enum { HomeType };      -- need enumeration for IsMember calls
   Node: union { Home , Proc };
 
   VCType: VC0..NumVCs-1;
   SharerNum: 0..ProcCount;
-  MessageType: enum {  ReadReq,         -- request for data / exclusivity
-                       ReadAck,         -- read ack (w/ data)
-                       ReadReqX,    
-								       WBReq,           -- writeback request (w/ data)
-                       WBShared,
-                       WBFwd,
-								       WBAck,           -- writeback ack 
-                       SMAck,   
-                       FwdSReq,
-                       FwdMReq,
-                       InvalidReq,
-                       InvalidAck,
-                       PutS
+  MessageType: enum { 
+                      D2H_REQ
+                      RdCurr,
+                      RdOwn,
+                      RdShared,
+                      RdAny,
+                      RdOwnNoData,
+                      ItoMWr,
+                      WrCur,
+                      CLFlush,
+                      CleanEvict,
+                      DirtyEvict,
+                      CleanEvictNoData,
+                      -- WOWrInv,
+                      -- WOWrInvF,
+                      WrInv,
+                      CacheFlushed,
+                      -- D2H_RESP
+                      RspIHitI,
+                      RspVHitV,
+                      RspIHitSE,
+                      RspSHitSE,
+                      RspSFwdM,
+                      RspIFwdM,
+                      RspVFwdV,
+                      -- H2D_RESP
+                      WritePull,
+                      GO,
+                      GO_WritePull,
+                      ExtCmp,
+                      GO_WritePull_Drop,
+                      Reserved,
+                      Fast_GO_WritePull,
+                      GO_ERR_WritePull,
+                      -- H2D_REQ
+                      SnpData,
+                      SnpInv,
+                      SnpCur
                     };
 
   Message:
@@ -48,7 +78,7 @@ type
       -- do not need a destination for verification; the destination is indicated by which array entry in the Net the message is placed
       vc: VCType;
       val: Value;
-      fwd_dst: Node;  -- for InvalidateReq and FwdMReq
+      -- fwd_dst: Node;  -- for InvalidateReq and FwdMReq
       num_sharer: SharerNum; -- optional, tells requester how many InvalidateAcks to expect
     End;
 
@@ -56,12 +86,45 @@ type
     Record
       -- state: enum { H_Valid, H_Invalid, 					--stable states
       -- 							HT_Pending }; 								--transient states during recall
-      state: enum { H_Invalid, H_Shared, H_Modified, 					--stable states
-							HT_MPending, HT_SPending, HT_SMPENDING, HT_IIPENDING}; 								--transient states during recall
+      state: enum { 
+              -- steady state
+              H_M, 
+              H_E, 
+              H_S, 
+              H_I, 					
+              
+              -- transient state
+							HT_SI_A,
+              HT_SE_A,
+              HT_II_D,
+              HT_MI_AD, -- only for CLFlush
+              HT_MI_D,
+              HT_MI_A,
+              HT_ME_AD,
+              HT_ME_A,
+              HT_ME_D,
+              HT_EI_AD,
+              HT_EI_A,
+              HT_EI_D,
+              HT_EE_AD,
+              HT_EE_A,
+              HT_EE_D,
+              HT_ES_A,
+              HT_SE_A,
+              HT_MS_AD,
+              HT_MS_D,
+              HT_MS_A
+              }; 								
       owner: Node;	
       sharers: multiset [ProcCount] of Node;    --No need for sharers in this protocol, but this is a good way to represent them
       val: Value; 
       -- sharers: multiset [ProcCount] of Node;      -- sharer
+      flag: enum{
+              flag_EM_D, -- eg. if flag = 1 then at H_E, stop processing transactions, wait for data and then transition to M
+              flag_EI_D,
+              flag_EE_D,
+              flag_ES_D
+              };
     End;
 
   ProcState:
@@ -69,10 +132,37 @@ type
       -- state: enum { P_Valid, P_Invalid,
       --             PT_Pending, PT_WritebackPending
       --             };
-      state: enum { P_Invalid, P_Shared, P_Modified,
-            PT_IM_IA, PT_IM_I, PT_SM_IA, PT_SM_I, PT_IS_A, PT_WritebackPending, PT_Clean_Eviction
-            };
+      state: enum { 
+              -- steady state
+              Proc_E
+                case 
+                HomeNode0.val = src.msg
+
+              P_M, 
+              P_E, 
+              P_S, 
+              P_I, 					
+              
+              -- transient state
+							PT_MI_GP,
+              PT_IM_D,
+              PT_IM_DA,
+              PT_MI_A,
+              PT_II_GOI,
+              P_II_WP,
+              P_II_GO,
+              P_IE_GP,
+              P_EI_GOI,
+              P_EI_GP,
+              P_SE_GOE,
+              P_IS_D,
+              P_IS_DA,
+              P_IS_A,
+              P_SI_GOI,
+              P_SI_GP
+              };
       val: Value;
+      addr: Value; -- addr only 0 or 1 for simplicity
       PendingInvAcks: SharerNum;
     End;
 
@@ -80,7 +170,7 @@ type
 -- Variables
 ----------------------------------------------------------------------
 var
-  HomeNode:  HomeState;
+  HomeNodes:  array [Home] of HomeState;
   Procs: array [Proc] of ProcState;
   Net:   array [Node] of multiset [NetMax] of Message;  -- One multiset for each destination - messages are arbitrarily reordered by the multiset
   InBox: array [Node] of array [VCType] of Message; -- If a message is not processed, it is placed in InBox, blocking that virtual channel
@@ -95,7 +185,7 @@ Procedure Send(mtype:MessageType;
 	       src:Node;
          vc:VCType;
          val:Value;
-         fwd_dst: Node;
+         -- fwd_dst: Node;
          num_sharer: SharerNum;
          );
 var msg:Message;
@@ -105,7 +195,7 @@ Begin
   msg.src   := src;
   msg.vc    := vc;
   msg.val   := val;
-  msg.fwd_dst := fwd_dst;
+  -- msg.fwd_dst := fwd_dst;
   msg.num_sharer := num_sharer;
   MultiSetAdd(msg, Net[dst]);
 End;
@@ -161,7 +251,7 @@ End;
 
 
 
-Procedure HomeReceive(msg:Message);
+Procedure HomeReceive(msg:Message, h:Home);
 var cnt:0..ProcCount;  -- for counting sharers
 Begin
 -- Debug output may be helpful:
@@ -387,7 +477,7 @@ Procedure ProcReceive(msg:Message; p:Proc);
 Begin
 --  put "Receiving "; put msg.mtype; put " on VC"; put msg.vc; 
 --  put " at proc "; put p; put "\n";
-
+  home.
   -- default to 'processing' message.  set to false otherwise
   msg_processed := true;
 
@@ -765,3 +855,6 @@ invariant "values in shared state match memory"
     ->
 			HomeNode.val = Procs[n].val
 	end;
+
+invariant "at most one flag = 1"
+-- TODO
