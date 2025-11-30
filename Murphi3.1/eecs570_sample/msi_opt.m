@@ -1,5 +1,50 @@
 
 -- two-state 4-hop VI protocol
+-- very useful
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
+
+
 
 ----------------------------------------------------------------------
 -- Constants
@@ -167,7 +212,8 @@ type
               flag_EM_D, -- eg. if flag = 1 then at H_E, stop processing transactions, wait for data and then transition to M
               flag_EI_D,
               flag_EE_D,
-              flag_ES_D
+              flag_ES_D,
+              flag_SI_A
               };
     End;
 
@@ -369,28 +415,36 @@ alias hv:HomeNodes[h].val do
       HomeNodes.state := HT_II_D;
       HomeNodes.flag := flag_EI_D;
       Send(GO_WritePull, msg.src, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED);
+      HomeNodes.requester := msg.src;
     
     case RdShared: --requests from the device for lines to be cached in Shared state.a
-      HomeNodes.state := H_S; -- need to wait for notification when transfer from I to S 
+       -- need to wait for notification when transfer from I to S 
       if (IsSharerListEmpty(hs)) then
+        HomeNodes.state := H_M;
         Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, M);
-      else
+        homenodes.owner := msg.src;
+      else -- TODO: ccheck if this is necessary since in I state there should be no sharers
+        HomeNodes.state := H_S;
         Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, S);
+        AddToSharersList(msg.src, hs);
       endif;
       Send(Data, msg.src, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      AddToSharersList(msg.src, hs);
 
     case RdAny: --requests from the device for lines to be cached in Shared state.a
-      HomeNodes.state := H_S; -- need to wait for notification when transfer from I to S 
+       -- need to wait for notification when transfer from I to S 
       if (IsSharerListEmpty(hs)) then
+        HomeNodes.state := H_M;
         Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, M);
-      else
+        homenodes.owner := msg.src;
+      else -- TODO: ccheck if this is necessary since in I state there should be no sharers
+        HomeNodes.state := H_S;
         Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, S);
+        AddToSharersList(msg.src, hs);
       endif;
       Send(Data, msg.src, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      AddToSharersList(msg.src, hs);
+      
     
-    case RdOwnNoData: --requests exclusive ownership of the cacheline address, no data transfer back to the device. typical response is GO_WritePull
+    case RdOwnNoData: --requests exclusive ownership of the cacheline address, no data transfer back to the device. typical response is GO
       HomeNodes.state := H_E;
       HomeNodes.owner := msg.src;
       Send(GO, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, E);
@@ -409,8 +463,8 @@ alias hv:HomeNodes[h].val do
     case Data:
       hs := H_I;
       hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
+      Send(Data, HomeNodes[h].requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+      undefine HomeNodes[h].requester;
     case RspIFwdM:
       msg_processed := false;
     case RdCurr:
@@ -613,121 +667,125 @@ alias hv:HomeNodes[h].val do
     case RdShared:
       -- whether requester is a sharer or not, it can receive the data
       Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
       AddToSharersList(msg.src, h);
     
     case RdAny:
       -- define: RdAny receive a S-state cacheline
       -- whether requester is a sharer or not, it can receive the data
       Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
       AddToSharersList(msg.src, h);
 
     case RdCur:
       -- read the current line, the requester could not cache it (Proc still in P_I)
       -- no rsp from host, only data
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
+      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
       
   
     case RdOwnNoData:
       -- upgrade the requester to E
       -- sharer or not, requester can receive the data
-      if (cnt = 1) & IsSharer(msg.src, h) then
-        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
-        Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
-        AddToSharersList(msg.src, h);
-
-
-      if (IsSharer(msg.src)) then
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt-1);
-        if cnt = 1 then 
-          HomeNodes.state := H_Modified;
+      if IsSharer(msg.src, h) then
+        if cnt = 1 then -- the only sharer request upgrade
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          RemoveFromSharersList(msg.src, h);
+          -- Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+          hs := H_E;
+          HomeNodes[h].owner := msg.src;
         else 
-          HomeNodes.state := HT_SMPENDING;
-        endif;
-        HomeNodes.owner := msg.src; --remember who the new owner will be
-        SendInvReqToSharers(msg.src);
-      else
-        HomeNodes.state := HT_SMPENDING;
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt);
-
-        HomeNodes.owner := msg.src; --remember who the new owner will be
-        SendInvReqToSharers(msg.src);
-      endif;
-
-    case PutS:
-      Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-      if IsSharer(msg.src) = true then
-        RemoveFromSharersList(msg.src);
-
-        if cnt = 1 then -- originally 1 but reduced 1
-          HomeNodes.state := H_Invalid;
-        else  
-          HomeNodes.state := H_Shared;
-        endif;
-      endif;
-    else
-      ErrorUnhandledMsg(msg, HomeType);
-    endswitch;
+          SendInvReqToSharers(msg.src, h);
+          RemoveFromSharersList(msg.src, h);
+          hs := HT_SE_A;
+          HomeNodes[h].requester := msg.src;
+          HomeNodes[h].request_type := msg.mtype;
+        endif
+      else -- requester is not sharer
+        if cnt = 0 then -- no sharer, impossible but write it defensively
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          hs := H_E;
+        else
+          SendInvReqToSharers(msg.src, h);
+          hs := HT_SE_A;
+          HomeNodes[h].requester := msg.src;
+          HomeNodes[h].request_type := msg.mtype;
+        endif
+      endif
     
-
-    switch msg.mtype
-    case RdShared:
-      -- whether requester is a sharer or not, it can receive the data
-      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
-      AddToSharersList(msg.src, h);
-    
-    case RdAny:
-      -- define: RdAny receive a S-state cacheline
-      -- whether requester is a sharer or not, it can receive the data
-      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
-      AddToSharersList(msg.src, h);
-
-    case RdCur:
-      -- read the current line, the requester could not cache it (Proc still in P_I)
-      -- no rsp from host, only data
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
-      
-  
-    case RdOwnNoData:
+    case RdOwn:
       -- upgrade the requester to E
       -- sharer or not, requester can receive the data
-      if (cnt = 1) & IsSharer(msg.src, h) then
-        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
-        Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[n].val, UNDEFINED, UNDEFINED);
-        AddToSharersList(msg.src, h);
-
-
-      if (IsSharer(msg.src)) then
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt-1);
-        if cnt = 1 then 
-          HomeNodes.state := H_Modified;
+      if IsSharer(msg.src, h) then
+        if cnt = 1 then -- the only sharer request upgrade
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          RemoveFromSharersList(msg.src, h);
+          Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+          hs := H_E;
+          HomeNodes[h].owner := msg.src;
         else 
-          HomeNodes.state := HT_SMPENDING;
-        endif;
-        HomeNodes.owner := msg.src; --remember who the new owner will be
-        SendInvReqToSharers(msg.src);
+          SendInvReqToSharers(msg.src, h);
+          RemoveFromSharersList(msg.src, h);
+          hs := HT_SE_A;
+          HomeNodes[h].requester := msg.src;
+          HomeNodes[h].request_type := msg.mtype;
+        endif
+      else -- requester is not sharer
+        if cnt = 0 then -- no sharer, impossible but write it defensively
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+          hs := H_E;
+        else
+          SendInvReqToSharers(msg.src, h);
+          hs := HT_SE_A;
+          HomeNodes[h].requester := msg.src;
+          HomeNodes[h].request_type := msg.mtype;
+        endif
+      endif
+
+    case WrCur:
+      -- request from device(I)
+      -- home inv all sharer, receive response, then grant the requester, request write into memory
+      hs := HT_SE_A;
+      HomeNodes[h].requester := msg.src;
+      HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].flag := flag_EI_D;
+      SendInvReqToSharers(HomeNodes[h].owner, h);
+    
+    case ItoMWr:
+      -- request from device(I)
+      -- home inv all sharer, receive response, then grant the requester, request write into memory
+      hs := HT_SE_A;
+      HomeNodes[h].requester := msg.src;
+      HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].flag := flag_EI_D;
+      SendInvReqToSharers(HomeNodes[h].owner, h);
+
+    case CleanEvictNoData: 
+      -- request from device(E/S)
+      -- home send GO-I
+      if cnt = 1 then -- the requester is the only sharer
+        hs := H_I;
+        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED);
+        RemoveFromSharersList(msg.src, h);
+        undefine HomeNodes[h].owner;
       else
-        HomeNodes.state := HT_SMPENDING;
-        Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, cnt);
+        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED);
+        RemoveFromSharersList(msg.src, h);
 
-        HomeNodes.owner := msg.src; --remember who the new owner will be
-        SendInvReqToSharers(msg.src);
-      endif;
+    case CLFlush:
+      -- request from device(I)
+      -- home send GO-I/GO-Err
+      hs := HT_SI_A;
+      SendInvReqToSharers(HomeNodes[h].owner, h);
 
-    case PutS:
-      Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-      if IsSharer(msg.src) = true then
-        RemoveFromSharersList(msg.src);
+    case WrInv:
+      -- request from devive(I)
+      -- home inv other sharers, send WritePull to request, request send data to home, home send GO-I/GO-Err
+      hs := HT_SI_A;
+      SendInvReqToSharers(HomeNodes[h].owner, h);
+      HomeNodes[h].requester := msg.src;
+      HomeNodes[h].request_type := msg.mtype;
 
-        if cnt = 1 then -- originally 1 but reduced 1
-          HomeNodes.state := H_Invalid;
-        else  
-          HomeNodes.state := H_Shared;
-        endif;
-      endif;
     else
       ErrorUnhandledMsg(msg, HomeType);
 
@@ -769,93 +827,568 @@ case H_M: -- Author: Ruihan 11/20
     Assert (IsUndefined(HomeNodes.owner) = false) 
        "HomeNodes has no owner, but line is Modified";
 
+    HomeNodes[h].requester := msg.src;
+    HomeNodes[h].request_type := msg.mtype;
+
     switch msg.mtype
     case RdCurr: --updated
-      hs := HT_MM_D;
-      --Send(Data, msg.src, HomeType, H2D_DATA, hv, UNDEFINED, 0);
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request RdCurr"
+      hs := HT_MM_AD; --waiting for data and snoop rsp from owner, update memory, send data but no GO
       Send(SnpCur, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
 
     case CLFlush: --updated
-      hs := HT_MI_D;
+      hs := HT_MI_AD; --waiting for data and snoop rsp from owner, update memory, send GO_I
       Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-      undefine HomeNodes[h].owner;
 
     case DirtyEvict: --updated
       assert (msg.src = HomeNodes[h].owner)
-        "only owner can send DirtyEvict"
-      hs := HT_MI_D;
+        "only owner can request DirtyEvict"
+      assert "only one DirtyEvict per device cacheline"
+      hs := HT_MI_D; --waiting for data from owner=requester, update memory
       Send(GO_WritePull, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);  
-      undefine HomeNodes[h].owner;
 
     case WrInv: --updated
       if (msg.src = HomeNodes[h].owner)
-        hs := HT_MI_D;
-        Send(WritePull, msg.src, hs, H2D_RSP); 
+        hs := HT_MI_D; --waiting for data from owner=requester, update memory, send GO_I
+        Send(WritePull, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid); 
       else
-        hs := HT_MI_DD;
+        hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send WritePull to requester, wait for data from requester, update memory, send GO_I
         Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); --get dirty copy back first
       endif;
-      undefine HomeNodes[h].owner;
 
     case ItoMWr:
-      hs := HT_ME_AD;
-      HomeNodes[h].flag := flag_EI_D;
-      Send(GO_WritePull, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request ItoMWr"
+      hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send GO_WritePull to requester, wait for data from requester, update memory
       Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); 
-      homeNodes[h].owner := msg.src;
+      HomeNodes[h].owner := msg.src; -- grant exclusive ownership to requester until it sends the data back 
 
     case RdOwn:
-      hs := HT_ME_AD;
-      Send(GO_WritePull, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request RdOwn"
+      hs := HT_ME_AD; --waiting for data and snop rsp from owner, update memory, send GO and data to requester
       Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); -- even though it's a read req, the line should be in a writable state so treat as a write
       HomeNodes[h].owner := msg.src;
 
     case WrCur:
-      hs := HT_ME_AD;
-      Send(GO_WritePull, msg.src, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, msg.cqid);
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request WrCur"
+      hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send GO_WritePull to requester, wait for data from requester, update memory
       Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
     else
       ErrorUnhandledMsg(msg, HomeType);
 
+    case RdShared:
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request RdShared"
+      hs := HT_MS_AD; --waiting for data and snoop rsp from owner, update memory, send GO and data to requester
+      Send(SnpData, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); 
+      AddToSharersList(msg.src, h);
+
+    case RdAny:
+      assert (msg.src != HomeNodes[h].owner)
+        "owner should not request RdAny"
+      hs := HT_MS_AD; --waiting for data and snoop rsp from owner, update memory, send GO and data to requester
+      Send(SnpData, HomeNodes[h].owner  , hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); 
+      AddToSharersList(msg.src, h);
     endswitch;
 
--- the homenode must remember the requester, and forward data to it
+  case HT_MM_AD:
+    switch msg.mtype
+    case Data:
+      hs := HT_MM_A; 
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED); --send here or send after getting snp rsp?
+    case RspVFwdV:
+      hs := HT_MM_D;    
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MM_A:
+    switch msg.mtype
+    case RspVFwdV:
+      hs := H_M;
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MM_D:
+    switch msg.mtype
+    case Data:
+      hs := H_M;
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MI_AD1: -- 1 suffix means it's receiving data from owner, there will be one more *_D in the future for requester
+    switch msg.mtype
+    case Data:
+      hs := HT_MI_A1; 
+      hv := msg.val;
+    case RspIFwdM: -- any other possible message here?
+      hs := HT_MI_D1;   
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+ 
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MI_A1:
+    switch msg.mtype
+    case RspIFwdM:
+      hs := HT_MI_D;
+      switch HomeNodes[h].request_type
+      case WrInv:
+        Send(WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED); 
+      case ItoMWr:
+        Send(GO_WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED);
+      case WrCur:
+        Send(GO_WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED); 
+      else
+        ErrorUnhandledState();
+      endswitch;
+  
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MI_D1:
+    switch msg.mtype
+    case Data:
+      hs := HT_MI_D; 
+      hv := msg.val;
+      switch HomeNodes[h].request_type
+      case WrInv:
+        Send(WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED); 
+      case ItoMWr:
+        Send(GO_WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED);
+      case WrCur:
+        Send(GO_WritePull, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, 0, UNDEFINED); 
+      else  
+        ErrorUnhandledState();
+      endswitch;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;  
 
   case HT_MI_AD:
+    assert (HomeNodes[h].request_type = CLFlush)
+      "only CLFlush should be here"
     switch msg.mtype
     case Data:
       hs := HT_MI_A;
       hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
+      Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I);
     case RspIFwdM:
-      hs := HT_MI_D;
+      hs := HT_MI_D;   
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+ 
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_MI_A:
+    switch msg.mtype
+    case RspIFwdM:
+      hs := H_I;
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type; 
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
 
     else
       ErrorUnhandledMsg(msg, HomeType);
-
-    endswitch;
+    endswitch;  
 
   case HT_MI_D:
     switch msg.mtype
     case Data:
       hs := H_I;
       hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
-    else
-      ErrorUnhandledMsg(msg, HomeType);
+      switch HomeNodes[h].request_type
+      case DirtyEvict:
+        -- nothing to send back
+      case WrInv:
+        Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I); 
+      case CLFlush:
+        Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I); 
+      else
+        ErrorUnhandledState();
+      endswitch;
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
 
-  endswitch;
-  
-  case HT_MI_A:
-    switch msg.mtype
-
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
     case RspIFwdM:
-      hs := H_I;
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+
     else
       ErrorUnhandledMsg(msg, HomeType);
-
     endswitch;
 
   case HT_ME_AD:
@@ -863,32 +1396,157 @@ case H_M: -- Author: Ruihan 11/20
     case Data:
       hs := HT_ME_A;
       hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
+      Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E); 
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
     case RspIFwdM:
-      hs := HT_ME_D;
+      hs := HT_ME_D;   
 
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+ 
     else
       ErrorUnhandledMsg(msg, HomeType);
-
-    endswitch;
-
-  case HT_ME_D:
-    switch msg.mtype
-    case Data:
-      hs := H_E;
-      hv := msg.val; 
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
-    else
-      ErrorUnhandledMsg(msg, HomeType); 
     endswitch;
 
   case HT_ME_A:
     switch msg.mtype
     case RspIFwdM:
-      hs := H_E;
-    
+      hs := H_M;
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_ME_D:
+    switch msg.mtype
+    case Data:
+      hs := H_M;
+      hv := msg.val;
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+      Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+
     else
       ErrorUnhandledMsg(msg, HomeType);
     endswitch;
@@ -898,36 +1556,160 @@ case H_M: -- Author: Ruihan 11/20
     case Data:
       hs := HT_MS_A;
       hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
-    case RspSFwdM:
-      hs := HT_MS_D;
+      Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S); 
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+    case RspIFwdM:
+      hs := HT_MS_D; 
 
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+   
     else
       ErrorUnhandledMsg(msg, HomeType);
-
-    endswitch;
-
-  case HT_MS_D:
-    switch msg.mtype
-    case Data:
-      hs := H_S;
-      hv := msg.val;
-      Send(Data, requester, HomeType, H2D_DATA, hv, UNDEFINED, UNDEFINED);
-      undefine requester;
-    else
-      ErrorUnhandledMsg(msg, HomeType); 
     endswitch;
 
   case HT_MS_A:
     switch msg.mtype
-    case RspSFwdM:
+    case RspIFwdM:
       hs := H_S;
-    
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    case Data:
+      msg_processed := false;
+
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;    
+
+  case HT_MS_D:  
+    switch msg.mtype
+    case Data:
+      hs := H_S;
+      hv := msg.val;
+      Send(Data, HomeNodes[h].requester, hs, H2D_DATA, hv, UNDEFINED, UNDEFINED);
+      Send(GO, HomeNodes[h].requester, hs, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspIHitI:
+      msg_processed := false;
+    case RspVHitV:
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspIFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+
     else
       ErrorUnhandledMsg(msg, HomeType);
     endswitch;
-
 
   case HT_MPending:
     switch msg.mtype
