@@ -1312,6 +1312,7 @@ alias hv:HomeNodes[h].val do
 
     case Data
       if (HomeNodes[h].flag = flag_SI_A) & (msg.src = HomeNodes[h].requester) then -- from requester's data
+      
         hs := H_I;
         Send(Go, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I);
         HomeNodes[h].owner := HomeNodes[h].requester;
