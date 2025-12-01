@@ -149,7 +149,10 @@ type
               HT_EE_AD,
               HT_EE_A,
               HT_EE_D,
+              HT_ES_AD,
               HT_ES_A,
+              HT_ES_D,
+              
               HT_SE_A,
               HT_MS_AD,
               HT_MS_D,
@@ -162,6 +165,7 @@ type
       
       requester: Node;    -- Mingjian 
       request_type: MessageType;
+      request_pre: 0..1;
 
       flag: enum{
               flag_EM_D, -- eg. if flag = 1 then at H_E, stop processing transactions, wait for data and then transition to M
@@ -494,6 +498,8 @@ alias hv:HomeNodes[h].val do
       hs := HT_EE_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
+
       Send(SnpCur, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       UNDEFINED, UNDEFINED);
@@ -502,7 +508,8 @@ alias hv:HomeNodes[h].val do
       hs := HT_EE_DA;
       HomeNodes[h].requester  := msg.src;
       HomeNodes[h].request_type := msg.mtype;
-
+      HomeNodes[h].request_pre  := 1;
+      
       HomeNodes[h].owner      := msg.src;
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -512,6 +519,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_ES_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
       AddToSharersList(msg.src, h);
       AddToSharersList(HomeNodes[h].owner, h);
@@ -524,6 +532,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_ES_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
       AddToSharersList(msg.src, h);
       AddToSharersList(HomeNodes[h].owner, h);
@@ -539,6 +548,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_EE_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
       HomeNodes[h].owner      := msg.src;
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
@@ -548,6 +558,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_EE_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
       HomeNodes[h].owner      := msg.src;
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
@@ -557,6 +568,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_EI_DA;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
       undefine HomeNodes[h].owner;
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
@@ -566,6 +578,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_EI_D;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 0;
 
       Send(GO_WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -575,6 +588,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_EI_D;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 0;
 
       Send(GO_WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -589,20 +603,508 @@ alias hv:HomeNodes[h].val do
       hs := HT_EI_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
+      Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
+      UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      UNDEFINED, UNDEFINED);
+      '''
       Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       msg.cqid, 1);
+      '''
     case CacheFlushed:
       hs := HT_EI_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
+      HomeNodes[h].request_pre  := 1;
 
+      Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
+      UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      UNDEFINED, UNDEFINED);
+      '''
       Send(GO, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       I, 1);
+      '''
       
+  case HT_EI_AD:
+    switch msg.type
+    case RspIHitSE:
+      switch HomeNodes[h].request_type
+      case CLFlush:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case WrInv:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre := 0;
 
+        Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      case CacheFlushed:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+
+        Send(GO, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case CLFlush:
+        hs  := HT_EI_D;
+        '''
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        '''
+      case WrInv:
+        hs  := HT_EI_D;
+        '''
+        Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+        '''
+      case CacheFlushed:
+        hs  := HT_EI_D;
+        '''
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        Send(GO, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
+        '''
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    
+    case Data:
+      switch HomeNodes[h].request_type
+      case CLFlush:
+        hs  := HT_EI_A;
+        hv  := msg.val;
+      case WrInv:
+        hs  := HT_EI_A;
+        hv  := msg.val;
+      case CacheFlushed:
+        hs  := HT_EI_A;
+        hv  := msg.val;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_EI_A:
+    switch msg.type
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case CLFlush:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case WrInv:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre := 0;
+
+        Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      case CacheFlushed:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+
+        Send(GO, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+  
+  case HT_EI_D:
+    switch msg.type
+    case Data:
+      switch HomeNodes[h].request_type
+      case CLFlush:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case WrInv:
+        if (HomeNodes[h].request_pre = 1) then
+          hs  := HT_EI_D;
+          HomeNodes[h].request_pre := 0;
+
+          Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          msg.uqid, 1);
+        else 
+          hs  := H_I;
+          hv  := msg.val;
+
+          Send(GO, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          I, 1);
+          undefine HomeNodes[h].request_type;
+          undefine HomeNodes[h].requester;
+          undefine HomeNodes[h].request_pre;
+        endif;
+      case CacheFlushed:
+        hs  := H_I;
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+
+        Send(GO, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
+      case ItoMWr:
+          hs  := H_I;
+          hv  := msg.val;
+
+          undefine HomeNodes[h].request_type;
+          undefine HomeNodes[h].requester;
+          undefine HomeNodes[h].request_pre;
+      case WrCur:
+        hs  := H_I;
+          hv  := msg.val;
+
+          undefine HomeNodes[h].request_type;
+          undefine HomeNodes[h].requester;
+          undefine HomeNodes[h].request_pre;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_EE_AD:
+    switch msg.type
+    case RspIHitSE:
+      switch HomeNodes[h].request_type
+      case RdCurr:
+        hs  := H_E;
+        '''
+        RdCur has no H2D_RSP
+        '''
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdOwn:
+        hs  := H_E;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        E, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case ItoMWr:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+        
+      case WrCur:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case RdCurr:
+        hs  := HT_EE_D;
+      case RdOwn:
+        hs  := HT_EE_D;
+      case ItoMWr:
+        hs  := HT_EE_D;
+      case WrCur:
+        hs  := HT_EE_D;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    
+    case Data:
+      switch HomeNodes[h].request_type
+      case RdCur:
+        hs  := HT_EE_A;
+        hv  := msg.val;
+      case RdOwn:
+        hs  := HT_EE_A;
+        hv  := msg.val;
+      case ItoMWr:
+        hs  := HT_EE_A;
+        hv  := msg.val;
+      case WrCur:
+        hs  := HT_EE_A;
+        hv  := msg.val;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_EE_A:
+    switch msg.type
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case RdCur:
+        hs  := H_E;
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdOwn:
+        hs  := H_E;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        E, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case ItoMWr:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      case WrCur:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_EE_D:
+    switch msg.type
+    case Data:
+      switch HomeNodes[h].request_type
+      case RdCur:
+        hs  := H_E;
+        HomeNodes[h].val  := msg.val;
+
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdOwn:
+        hs  := H_E;
+        HomeNodes[h].val  := msg.val;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        E, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case ItoMWr:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+        HomeNodes[h].val  := msg.val;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+        
+      case WrCur:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+        HomeNodes[h].val  := msg.val;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_ES_AD:
+    switch msg.type
+    case RspIHitSE:
+      switch HomeNodes[h].request_type
+      case RdShared:
+        hs  := H_S;
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdAny:
+        hs  := H_S;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      '''
+      case ItoMWr:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+        
+      case WrCur:
+        hs  := HT_EI_D;
+        HomeNodes[h].request_pre  := 0;
+
+        Send(GO_WritePull, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
+      '''
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case RdShared:
+        hs  := HT_ES_D;
+      case RdAny:
+        hs  := HT_ES_D;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    
+    case Data:
+      switch HomeNodes[h].request_type
+      case RdShared:
+        hs  := HT_ES_A;
+        hv  := msg.val;
+      case RdAny:
+        hs  := HT_ES_A;
+        hv  := msg.val;
+      else
+        ErrorUnhandledMsg(msg, HomeType);
+      endswitch;
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_ES_A:
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case RdShared:
+        hs  := H_S;
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdAny:
+        hs  := H_S;
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+
+  case HT_ES_D:
+    case RspIFwdM:
+      switch HomeNodes[h].request_type
+      case RdShared:
+        hs  := H_S;
+        hv  := msg.val;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      case RdAny:
+        hs  := H_S;
+        hv  := msg.val;
+
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        S, 1);
+        Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
+        undefine HomeNodes[h].request_type;
+        undefine HomeNodes[h].requester;
+        undefine HomeNodes[h].request_pre;
+      else
+      ErrorUnhandledMsg(msg, HomeType);
+    else
+      ErrorUnhandledMsg(msg, HomeType);
+    endswitch;
+  
   -- Jiahe
   case H_S: 
     Assert (IsUndefined(HomeNodes[h].owner) = true) 
