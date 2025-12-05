@@ -252,7 +252,7 @@ type
               P_SI_GP
               };
       val: Value;
-      addr: Value; -- addr only 0 or 1 for simplicity
+      addr: Address; -- addr only 0 or 1 for simplicity
       PendingInvAcks: SharerNum;
     End;
 
@@ -1513,7 +1513,7 @@ case H_M: -- Author: Ruihan 11/20
       assert (msg.src != HomeNodes[h].owner)
         "owner should not request RdOwn"
       hs := HT_ME_AD; --waiting for data and snop rsp from owner, update memory, send GO and data to requester
-      Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); -- even though it's a read req, the line should be in a writable state so treat as a write
+      Send(SnpInv, HomeNodes[h].owner, hs, H2D_REQ, UNDEFINED, UNDEFINED, UNDEFINED); -- even though it s a read req, the line should be in a writable state so treat as a write
       HomeNodes[h].owner := msg.src;
 
     case WrCur:
@@ -1695,7 +1695,7 @@ case H_M: -- Author: Ruihan 11/20
       ErrorUnhandledMsg(msg, HomeType);
     endswitch;
 
-  case HT_MI_AD1: -- 1 suffix means it's receiving data from owner, there will be one more *_D in the future for requester
+  case HT_MI_AD1: -- 1 suffix means it is receiving data from owner, there will be one more *_D in the future for requester
     switch msg.mtype
     case Data:
       hs := HT_MI_A1; 
@@ -2651,59 +2651,243 @@ End;
 -- Processor actions (affecting coherency)
 
 ruleset n:Proc Do
+ruleset ad: Address do  
   alias p:Procs[n] Do
-
-	ruleset v:Value Do
-  	rule "store new value"
-   	 (p.state = P_Modified)
-    	==>
- 		   p.val := v;      
- 		   LastWrite := v;  --We use LastWrite to sanity check that reads receive the value of the last write
-  	endrule;
-	endruleset;
-
-  rule "read exclusive request invalid"
-    p.state = P_Invalid 
+  
+  rule "device in state I, send RdOwn"
+    p.state = P_I
   ==>
-    Send(ReadReqX, HomeType, n, VC0, UNDEFINED, UNDEFINED, UNDEFINED);
-    p.state := PT_IM_IA;
-    p.PendingInvAcks := 0;
+    p.state := PT_IM_DA;   
+    p.addr  := ad;   
+      if ad = 0 then
+        
+        Send(RdOwn, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(RdOwn, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
   endrule;
 
-  rule "read exclusive request shared"
-    p.state = P_Shared
+  rule "device in state I, send RdAny"
+    p.state = P_I
   ==>
-    Send(ReadReqX, HomeType, n, VC0, UNDEFINED, UNDEFINED, UNDEFINED);
-    p.state := PT_SM_IA;
-    p.PendingInvAcks := 0;
+    p.state := PT_IM_DA;   
+    p.addr  := ad;     
+      if ad = 0 then
+        Send(RdAny, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(RdAny, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
   endrule;
 
-  rule "read request"
-    p.state = P_Invalid 
+  rule "device in state I, send WrInv"
+    p.state = P_I
   ==>
-    Send(ReadReq, HomeType, n, VC0, UNDEFINED, UNDEFINED, UNDEFINED);
-    p.state := PT_IS_A;
+    p.state := PT_II_WP;      
+      if ad = 0 then
+        Send(WrInv, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(WrInv, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+  /*
+  rule "device in state M, send DirtyEvict"
+    p.state = P_M
+  ==>
+    p.state := PT_MI_GP;      
+      if ad = 0 then
+        Send(DirtyEvict, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(DirtyEvict, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+  */
+  rule "device in state E, send CleanEvict"
+    p.state = P_E
+  ==>
+    p.state := PT_EI_GP;      
+      if ad = 0 then
+        Send(CleanEvict, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(CleanEvict, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
   endrule;
 
-
-  rule "clean eviction"
-    (p.state = P_Shared)
+  rule "device in state E, send CleanEvictNoData"
+    p.state = P_E
   ==>
-    Send(PutS, HomeType, n, VC1, p.val, UNDEFINED, UNDEFINED); 
-    -- p.state := P_Invalid;
-    p.state := PT_Clean_Eviction;
+    p.state := PT_EI_GOI;    
     undefine p.val;
+    undefine p.addr;  
+      if ad = 0 then
+        Send(CleanEvictNoData, Home0, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(CleanEvictNoData, Home1, n, D2H_REQ, UNDEFINED, ad,
+        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
   endrule;
 
-  rule "dirty eviction"
-    (p.state = P_Modified)
+  ruleset v:Value Do
+  rule "device in state E, store data"
+    p.state = P_E
   ==>
-    Send(WBReq, HomeType, n, VC1, p.val, UNDEFINED, UNDEFINED); 
-    p.state := PT_WritebackPending;
-    -- undefine p.val;
+    p.state := P_M;      
+    p.val   := v;
   endrule;
+  endruleset;
+
+  rule "device in state I, send WrCur"
+    (p.state = P_I)
+    ==>
+      p.state := P_IE_GP;      
+      if ad = 0 then
+        Send(WrCur, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(WrCur, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state I, send ItoMWr"
+    (p.state = P_I)
+    ==>
+      p.state := P_IE_GP; 
+      if ad = 0 then
+        Send(ItoMWr, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(ItoMWr, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+  endrule;
+
+  rule "device in state I, send RdShared"
+    (p.state = P_I)
+    ==>
+      p.state := P_IS_DA;      
+      if ad = 0 then
+        Send(RdShared, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(RdShared, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state I, send RdCurr"
+    (p.state = P_I)
+    ==>
+      p.state := P_I;
+      if ad = 0 then
+        Send(RdCurr, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(RdCurr, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state S, send CleanEvict"
+    (p.state = P_S)
+    ==>
+      p.state := P_SI_GP;
+      if ad = 0 then
+        Send(CleanEvict, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(CleanEvict, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state S, send CleanEvictNoData"
+    (p.state = P_S)
+    ==>
+      p.state := P_SI_GOI;
+      if ad = 0 then
+        Send(CleanEvictNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(CleanEvictNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state S, send RdOwnNoData"
+    (p.state = P_S)
+    ==>
+      p.state := P_SM_DA;      
+      if ad = 0 then
+        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state S, send RdOwnNoData"
+    (p.state = P_S)
+    ==>
+      p.state := P_SM_GOE;      
+      if ad = 0 then
+        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  
+
+
+
+  
+  rule "device in state I, send CLFlush"
+    (p.state = P_I)
+    ==>
+      p.state := PT_II_GOI;      
+      if ad = 0 then
+        Send(CLFlush, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(CLFlush, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state I, send cache flush"
+    (p.state = P_I)
+    ==>
+      p.state := PT_II_GOI;      
+      if ad = 0 then
+        Send(CacheFlushed, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      else
+        Send(CacheFlushed, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+      endif;
+
+  
+
+
+  rule "device in state M, send DirtyEvict"
+    (p.state = P_M)
+    ==>
+      p.state := P_MI_GP;
+      if ad = 0 then
+        Send(DirtyEvict, Home0, n, D2H_REQ, p.val, UNDEFINED, UNDEFINED);
+      else
+        Send(DirtyEvict, Home1, n, D2H_REQ, p.val, UNDEFINED, UNDEFINED);
+      endif;
+      undefine p.val;
+  
 
   endalias;
+endruleset;
 endruleset;
 
 -- Message delivery rules

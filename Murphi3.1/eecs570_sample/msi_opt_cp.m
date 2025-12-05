@@ -839,6 +839,7 @@ ruleset n: Proc do
       p.state := P_IMAD;
     endrule;
   endruleset;
+  
 
   ruleset v: Value do  
     rule "store miss from S"
