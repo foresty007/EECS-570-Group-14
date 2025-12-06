@@ -63,7 +63,7 @@
       msg_processed := false;
     case GO_ERR_WritePull:
       msg_processed := false;
-    case DATA:
+    case Data:
       msg_processed := false;
     case SnpData:
       msg_processed := false;
@@ -101,17 +101,17 @@ type
   Proc: scalarset(ProcCount);   -- unordered range of processors
   Home: enum{ Home0, Home1 };   -- 
   
-  CQIDType: 0..MaxUQID;
-  UQIDType: 0..MaxUQID;         --Mingjian Li
+  -- CQIDType: scalarset(MaxUQID);
+  UQIDType: scalarset(MaxUQID);         --Mingjian Li
   MESIType: enum { M, E, S, I };
-  RspData: union { uq: UQIDType; mesi: MESIType };
+  RspData: union {UQIDType, MESIType };
   
-  Value: scalarset(ValueCount); -- arbitrary values for tracking coherence
-  Address: scalarset{AddrCount}; 
+  Value: 0..ValueCount; -- arbitrary values for tracking coherence
+  Address: 0..AddrCount; 
   -- Home: enum { HomeType };      -- need enumeration for IsMember calls
   Node: union { Home , Proc };
 
-  VCType: VC0..NumVCs-1;
+  VCType: 0..NumVCs-1;
   SharerNum: 0..ProcCount;
   MessageType: enum { 
                       --D2H_REQUEST
@@ -151,7 +151,7 @@ type
                       SnpData,
                       SnpInv,
                       SnpCur,
-                      -- DATA
+                      -- Data
                       Data
                     };
 
@@ -165,7 +165,7 @@ type
       val: Value;       -- exclusive to D2H_DATA, H2D_DATA
       addr: Address;    -- exclusive to D2H_REQ, H2D_REQ
 
-      cqid:  CQIDType;  -- exclusive to D2H_REQ, H2D_RSP, H2D_DATA
+      cqid:  UQIDType;  -- exclusive to D2H_REQ, H2D_RSP, H2D_DATA
       uqid:  UQIDType;  -- exclusive to D2H_RSP, D2H_DATA, H2D_REQ
       nt:    0..1;      -- exclusive to D2H_REQ
       chunkvalid: 0..1; -- exclusive to D2H_DATA, H2D_DATA
@@ -198,11 +198,17 @@ type
 							HT_SI_A,
               HT_SE_A,
               HT_II_D,
+              HT_II_AD,
               HT_IS_A,  --Added on 11/20/2025 
+              HT_MM_AD,
+              HT_MM_A,
               HT_MM_D,
               HT_MI_AD, -- only for CLFlush
               HT_MI_D,
               HT_MI_A,
+              HT_MI_AD1,
+              HT_MI_A1,
+              HT_MI_D1,
               HT_ME_AD,
               HT_ME_A,
               HT_ME_D,
@@ -216,7 +222,7 @@ type
               HT_ES_A,
               HT_ES_D,
               
-              HT_SE_A,
+              -- HT_SE_A,
               HT_MS_AD,
               HT_MS_D,
               HT_MS_A
@@ -253,8 +259,11 @@ type
               
               -- transient state
 							PT_MI_GP,
+
+              PT_IM_A,
               PT_IM_D,
-              PT_IM_DA,
+              PT_IM_AD,
+              
               PT_MI_A,
               PT_II_GOI,
               PT_II_WP,
@@ -263,15 +272,25 @@ type
               PT_EI_GOI,
               PT_EI_GP,
               PT_SE_GOE,
-              PT_IS_D,
-              PT_IS_DA,
+              
               PT_IS_A,
+              PT_IS_D,
+              PT_IS_AD,
+              
               PT_SI_GOI,
-              PT_SI_GP
+              PT_SI_GP,
+              PT_IE_D, 
+              PT_II_GP,
+              --todo
+              PT_SM_AD,
+              PT_SM_A,
+              PT_SM_D,
+              PT_SM_GOE
               };
       val: Value;
       addr: Address; -- addr only 0 or 1 for simplicity
       -- PendingInvAcks: SharerNum;
+      mem_write_val: Value;
     End;
 
 ----------------------------------------------------------------------
@@ -283,8 +302,8 @@ var
   Net:   array [Node] of multiset [NetMax] of Message;  -- One multiset for each destination - messages are arbitrarily reordered by the multiset
   InBox: array [Node] of array [VCType] of Message; -- If a message is not processed, it is placed in InBox, blocking that virtual channel
   msg_processed: boolean;
-  LastWrite: Value; -- Used to confirm that writes are not lost; this variable would not exist in real hardware
-
+  LastWrite0: Value; -- Used to confirm that writes to addr 0 are not lost;
+  LastWrite1: Value; -- Used to confirm that writes to addr 1 are not lost;
 ----------------------------------------------------------------------
 -- Procedures
 ----------------------------------------------------------------------
@@ -295,7 +314,7 @@ Procedure Send(mtype:MessageType;
          val:Value;
          addr:Address;
 
-         cqid: CQIDType;
+         cqid: UQIDType;
          uqid: UQIDType;
          nt:  0..1;
          chunkvalid: 0..1;
@@ -346,7 +365,7 @@ End;
 -- These aren't needed for Valid/Invalid protocol, but this is a good way of writing these functions
 */
 -- modified by Jiahe, 2 address
-Procedure AddToSharersList(n:Node, h: Home);
+Procedure AddToSharersList(n:Node; h: Home);
 Begin
     if MultiSetCount(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n) = 0 then
       MultiSetAdd(n, HomeNodes[h].sharers);
@@ -354,28 +373,28 @@ Begin
 End;
 
 -- modified by Jiahe, 2 address
-Function IsSharer(n:Node, h: Home) : Boolean;
+Function IsSharer(n:Node; h: Home) : Boolean;
 Begin
     return MultiSetCount(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n) > 0;
 End;
 
 Function IsSharerListEmpty(h: Home): Boolean;
 Begin
-  return MultiSetCount(i:HomeNode[h].sharers, true) = 0
+  return MultiSetCount(i:HomeNodes[h].sharers, true) = 0
 End;
 
-Procedure RemoveFromSharersList(n:Node, h: Home);
+Procedure RemoveFromSharersList(n:Node; h: Home);
 Begin
-  if addr = 0 then
+  -- if addr = 0 then
     MultiSetRemovePred(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n);
-  else  
-    MultiSetRemovePred(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n);
-  endif
+  -- else  
+    -- MultiSetRemovePred(i:HomeNodes[h].sharers, HomeNodes[h].sharers[i] = n);
+  -- endif
 End;
 
 -- Sends a message to all sharers except rqst
 -- modified by Jiahe, 2 address
-Procedure SendInvReqToSharers(rqst:Node, h: Home);
+Procedure SendInvReqToSharers(rqst:Node; h: Home; msg: Message);
 Begin
   for n:Node do
     if (IsMember(n, Proc) &
@@ -386,9 +405,15 @@ Begin
       then 
         -- Send invalidation message here 
         --Send(InvalidReq, n, h, VC1, UNDEFINED, rqst, UNDEFINED);
-        Send(SnpInv, n , h, H2D_REQ, UNDEFINED, msg.addr, 
-        UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
-        UNDEFINED, UNDEFINED);
+        if h = Home0 then
+          Send(SnpInv, n , h, H2D_REQ, UNDEFINED, 0, 
+          UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          UNDEFINED, UNDEFINED);
+        else
+          Send(SnpInv, n , h, H2D_REQ, UNDEFINED, 1, 
+          UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          UNDEFINED, UNDEFINED);
+        endif;
       endif;
     endif;
   endfor;
@@ -396,7 +421,7 @@ End;
 
 
 
-Procedure HomeReceive(msg:Message, h:Home); --TODO:
+Procedure HomeReceive(msg:Message; h:Home); --TODO:
 var cnt:0..ProcCount;  -- for counting sharers
 Begin
 alias hs:HomeNodes[h].state do
@@ -415,7 +440,7 @@ alias hv:HomeNodes[h].val do
   -- default to 'processing' message.  set to false otherwise
   msg_processed := true;
 
-  switch HomeNodes.state
+  switch HomeNodes[h].state
   case H_I:  -- Author: Yi Dong 11/20/2025
     switch msg.mtype 
 
@@ -428,36 +453,36 @@ alias hv:HomeNodes[h].val do
     --   HomeNodes.owner := msg.src;
     --   Send(ReadAck, msg.src, HomeType, VC2, HomeNodes.val, UNDEFINED, 0);
     case RdCurr: --get the most current data, not change the existing state in any cache
-      HomeNodes.state := H_I;
+      hs := H_I;
       Send(Data, msg.src , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
       msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
       UNDEFINED, UNDEFINED);
     case CLFlush: --invalidate the cacheline specifiedin the address field. The typical response is GO-I
-      HomeModes.state := H_I;
+      hs := H_I;
       Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-      msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+      msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       I, 1);
     
     case ItoMWr: --requests exclusive ownership of the cacheline address, writes the cacehline back to the Host. typical response is GO_WritePull
-      HomeNodes.state := HT_II_D;
-      HomeNodes.flag := flag_EI_D;
-      Send(GO_WritePull, msg.src, H2D_RSP, UNDEFINED, UNDEFINED, 
-      msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED 
-      msg.cqid, 1);
-      HomeNodes.requester := msg.src;
+      hs := HT_II_AD;
+      --HomeNodes.flag := flag_EI_D; 
+      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+      msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      E, 1);
+      HomeNodes[h].requester := msg.src;
     
     case RdShared: --requests from the device for lines to be cached in Shared state.a
        -- need to wait for notification when transfer from I to S 
       if (IsSharerListEmpty(h)) then
-        HomeNodes.state := H_M;
+        hs := H_M;
         Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-        msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED 
+        msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         M, 1);
-        homenodes.owner := msg.src;
+        HomeNodes[h].owner := msg.src;
       else -- TODO: ccheck if this is necessary since in I state there should be no sharers
-        HomeNodes.state := H_S;
+        hs := H_S;
         Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-        msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+        msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         S, 1);
         AddToSharersList(msg.src, h);
       endif;
@@ -468,15 +493,15 @@ alias hv:HomeNodes[h].val do
     case RdAny: --requests from the device for lines to be cached in Shared state.a
        -- need to wait for notification when transfer from I to S 
       if (IsSharerListEmpty(h)) then
-        HomeNodes.state := H_M;
+        hs := H_M;
         Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         M, 1);
-        homenodes.owner := msg.src;
+        HomeNodes[h].owner := msg.src;
       else -- TODO: ccheck if this is necessary since in I state there should be no sharers
-        HomeNodes.state := H_S;
+        hs := H_S;
         Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         S, 1);
         AddToSharersList(msg.src, h);
       endif;
@@ -486,21 +511,73 @@ alias hv:HomeNodes[h].val do
       
     
     case RdOwnNoData: --requests exclusive ownership of the cacheline address, no data transfer back to the device. typical response is GO
-      HomeNodes.state := H_E;
-      HomeNodes.owner := msg.src;
+      hs := H_E;
+      HomeNodes[h].owner := msg.src;
       Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
-      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       E, 1);
     
     case WrCur: --requests exclusive ownership of the cacheline address, writes the cacehline back to the Host. typical response is GO_WritePull
-      HomeNodes.state := H_E;
-      HomeNodes.flag := flag_EI_D;
-      Send(GO_WritePull, msg.src, H2D_RSP, UNDEFINED, UNDEFINED, 
-      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED
+      hs := H_E;
+      HomeNodes[h].flag := flag_EI_D;
+      Send(GO_WritePull, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       msg.uqid, 1);
     
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      
+      ErrorUnhandledMsg(msg,  h);
+    endswitch;
+
+  case HT_II_AD:
+    switch msg.mtype
+    case RspIHitI:
+      hs := HT_II_D;
+      HomeNodes[h].owner := msg.src;
+      Send(GO_WritePull, HomeNodes[h].owner, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+      msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      msg.cqid, 1);
+    case RspIFwdM:
+      msg_processed := false;
+    case RdCurr:
+      msg_processed := false;
+    case RdOwn:
+      msg_processed := false;
+    case RdShared:
+      msg_processed := false;
+    case RdAny:
+      msg_processed := false;
+    case RdOwnNoData:
+      msg_processed := false;
+    case ItoMWr:
+      msg_processed := false;
+    case WrCur:
+      msg_processed := false;
+    case CLFlush:
+      msg_processed := false;
+    case CleanEvict:
+      msg_processed := false;
+    case DirtyEvict:
+      msg_processed := false;
+    case CleanEvictNoData:
+      msg_processed := false;
+    case WrInv:
+      msg_processed := false;
+    case CacheFlushed:
+      msg_processed := false;
+    case RspVHitV: 
+      msg_processed := false;
+    case RspIHitSE:
+      msg_processed := false;
+    case RspSHitSE:
+      msg_processed := false;
+    case RspSFwdM:
+      msg_processed := false;
+    case RspVFwdV:
+      msg_processed := false;
+    
+    else
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_II_D:
@@ -508,8 +585,8 @@ alias hv:HomeNodes[h].val do
     case Data:
       hs := H_I;
       hv := msg.val;
-      Send(Data, HomeNodes[h].requester, HomeType, H2D_DATA, hv, UNDEFINED, 
-      UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+      Send(Data, HomeNodes[h].requester, h, H2D_DATA, hv, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0, 
       UNDEFINED, UNDEFINED);
       undefine HomeNodes[h].requester;
     case RspIFwdM:
@@ -536,10 +613,6 @@ alias hv:HomeNodes[h].val do
       msg_processed := false;
     case CleanEvictNoData:
       msg_processed := false;
-    case WOWrInv:
-      msg_processed := false;
-    case WOWrInvF:
-      msg_processed := false;
     case WrInv:
       msg_processed := false;
     case CacheFlushed:
@@ -554,13 +627,11 @@ alias hv:HomeNodes[h].val do
       msg_processed := false;
     case RspSFwdM:
       msg_processed := false;
-    case RspIFwdM:
-      msg_processed := false;
     case RspVFwdV:
       msg_processed := false;
     
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
   
   
@@ -592,7 +663,7 @@ alias hv:HomeNodes[h].val do
     case RdCurr:
       -- read the current line, the requester could not cache it (Proc still in P_I)
       -- no rsp from host, only data
-      hs := HT_EE_DA;
+      hs := HT_EE_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -602,7 +673,7 @@ alias hv:HomeNodes[h].val do
       UNDEFINED, UNDEFINED);
 
     case RdOwn:
-      hs := HT_EE_DA;
+      hs := HT_EE_AD;
       HomeNodes[h].requester  := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -613,7 +684,7 @@ alias hv:HomeNodes[h].val do
       UNDEFINED, UNDEFINED);
 
     case RdShared:
-      hs := HT_ES_DA;
+      hs := HT_ES_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -626,7 +697,7 @@ alias hv:HomeNodes[h].val do
       UNDEFINED, UNDEFINED);
     
     case RdAny:
-      hs := HT_ES_DA;
+      hs := HT_ES_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -642,7 +713,7 @@ alias hv:HomeNodes[h].val do
       
 
     case ItoMWr:
-      hs := HT_EE_DA;
+      hs := HT_EE_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -652,7 +723,7 @@ alias hv:HomeNodes[h].val do
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       UNDEFINED, UNDEFINED);
     case WrCur:
-      hs := HT_EE_DA;
+      hs := HT_EE_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -662,7 +733,7 @@ alias hv:HomeNodes[h].val do
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       UNDEFINED, UNDEFINED);
     case CLFlush:
-      hs := HT_EI_DA;
+      hs := HT_EI_AD;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].request_pre  := 1;
@@ -724,9 +795,12 @@ alias hv:HomeNodes[h].val do
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       I, 1);
       */
+    else
+      ErrorUnhandledMsg(msg,  h);
+    endswitch;
       
   case HT_EI_AD:
-    switch msg.type
+    switch msg.mtype
     case RspIHitSE:
       switch HomeNodes[h].request_type
       case CLFlush:
@@ -752,8 +826,8 @@ alias hv:HomeNodes[h].val do
         I, 1);
       else
     
-      ErrorUnhandledMsg(msg, HomeType);
-    endswitch;
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
 
     case RspIFwdM:
       switch HomeNodes[h].request_type
@@ -780,7 +854,7 @@ alias hv:HomeNodes[h].val do
         I, 1);
         */
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     
     case Data:
@@ -795,7 +869,7 @@ alias hv:HomeNodes[h].val do
         hs  := HT_EI_A;
         hv  := msg.val;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     case RdCurr:
       msg_processed := false;
@@ -824,11 +898,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_EI_A:
-    switch msg.type
+    switch msg.mtype
     case RspIFwdM:
       switch HomeNodes[h].request_type
       case CLFlush:
@@ -853,7 +927,8 @@ alias hv:HomeNodes[h].val do
         msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         I, 1);
       else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -881,11 +956,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
   
   case HT_EI_D:
-    switch msg.type
+    switch msg.mtype
     case Data:
       switch HomeNodes[h].request_type
       case CLFlush:
@@ -904,7 +979,6 @@ alias hv:HomeNodes[h].val do
         else 
           hs  := H_I;
           hv  := msg.val;
-
           Send(GO, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
           msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
           I, 1);
@@ -936,7 +1010,8 @@ alias hv:HomeNodes[h].val do
           undefine HomeNodes[h].requester;
           undefine HomeNodes[h].request_pre;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -964,11 +1039,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_EE_AD:
-    switch msg.type
+    switch msg.mtype
     case RspIHitSE:
       switch HomeNodes[h].request_type
       case RdCurr:
@@ -1010,7 +1085,7 @@ alias hv:HomeNodes[h].val do
         msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         msg.uqid, 1);
       else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
     case RspIFwdM:
@@ -1024,12 +1099,12 @@ alias hv:HomeNodes[h].val do
       case WrCur:
         hs  := HT_EE_D;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     
     case Data:
       switch HomeNodes[h].request_type
-      case RdCur:
+      case RdCurr:
         hs  := HT_EE_A;
         hv  := msg.val;
       case RdOwn:
@@ -1042,7 +1117,7 @@ alias hv:HomeNodes[h].val do
         hs  := HT_EE_A;
         hv  := msg.val;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     case RdCurr:
       msg_processed := false;
@@ -1071,14 +1146,14 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_EE_A:
-    switch msg.type
+    switch msg.mtype
     case RspIFwdM:
       switch HomeNodes[h].request_type
-      case RdCur:
+      case RdCurr:
         hs  := H_E;
         Send(Data, HomeNodes[h].requester , h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
         msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
@@ -1113,7 +1188,8 @@ alias hv:HomeNodes[h].val do
         msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         msg.uqid, 1);
       else
-      ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -1141,14 +1217,14 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_EE_D:
-    switch msg.type
+    switch msg.mtype
     case Data:
       switch HomeNodes[h].request_type
-      case RdCur:
+      case RdCurr:
         hs  := H_E;
         HomeNodes[h].val  := msg.val;
 
@@ -1189,7 +1265,8 @@ alias hv:HomeNodes[h].val do
         msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
         msg.uqid, 1);
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -1217,11 +1294,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ES_AD:
-    switch msg.type
+    switch msg.mtype
     case RspIHitSE:
       switch HomeNodes[h].request_type
       case RdShared:
@@ -1265,7 +1342,7 @@ alias hv:HomeNodes[h].val do
         msg.uqid, 1);
       */
       else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
     case RspIFwdM:
@@ -1275,7 +1352,7 @@ alias hv:HomeNodes[h].val do
       case RdAny:
         hs  := HT_ES_D;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     
     case Data:
@@ -1287,7 +1364,7 @@ alias hv:HomeNodes[h].val do
         hs  := HT_ES_A;
         hv  := msg.val;
       else
-        ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
       endswitch;
     case RdCurr:
       msg_processed := false;
@@ -1316,10 +1393,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ES_A:
+    switch msg.mtype
     case RspIFwdM:
       switch HomeNodes[h].request_type
       case RdShared:
@@ -1345,7 +1423,8 @@ alias hv:HomeNodes[h].val do
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_pre;
       else
-      ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -1373,10 +1452,11 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ES_D:
+    switch msg.mtype
     case RspIFwdM:
       switch HomeNodes[h].request_type
       case RdShared:
@@ -1406,7 +1486,8 @@ alias hv:HomeNodes[h].val do
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_pre;
       else
-      ErrorUnhandledMsg(msg, HomeType);
+        ErrorUnhandledMsg(msg,  h);
+      endswitch;
     case RdCurr:
       msg_processed := false;
     case RdOwn:
@@ -1434,7 +1515,7 @@ alias hv:HomeNodes[h].val do
     case CacheFlushed:
       msg_processed := false;
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
   
   -- Jiahe
@@ -1446,21 +1527,31 @@ alias hv:HomeNodes[h].val do
     switch msg.mtype
     case RdShared:
       -- whether requester is a sharer or not, it can receive the data
-      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
+      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      S, 1);
+      Send(Data, msg.src, h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+      UNDEFINED, UNDEFINED);
       AddToSharersList(msg.src, h);
     
     case RdAny:
       -- define: RdAny receive a S-state cacheline
       -- whether requester is a sharer or not, it can receive the data
-      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, S);
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
+      Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+      S, 1);
+      Send(Data, msg.src, h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+      UNDEFINED, UNDEFINED);
       AddToSharersList(msg.src, h);
 
-    case RdCur:
+    case RdCurr:
       -- read the current line, the requester could not cache it (Proc still in P_I)
       -- no rsp from host, only data
-      Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNodes[h].val, UNDEFINED, UNDEFINED);
+      Send(Data, msg.src, h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+      msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+      UNDEFINED, UNDEFINED);
       
   
     case RdOwnNoData:
@@ -1468,13 +1559,15 @@ alias hv:HomeNodes[h].val do
       -- sharer or not, requester can receive the data
       if IsSharer(msg.src, h) then
         if cnt = 1 then -- the only sharer request upgrade
-          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          E, 1);
           RemoveFromSharersList(msg.src, h);
-          -- Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+          -- Send(Data, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
           hs := H_E;
           HomeNodes[h].owner := msg.src;
         else 
-          SendInvReqToSharers(msg.src, h);
+          SendInvReqToSharers(msg.src, h, msg);
           RemoveFromSharersList(msg.src, h);
           hs := HT_SE_A;
           HomeNodes[h].requester := msg.src;
@@ -1482,10 +1575,12 @@ alias hv:HomeNodes[h].val do
         endif
       else -- requester is not sharer
         if cnt = 0 then -- no sharer, impossible but write it defensively
-          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          E, 1);
           hs := H_E;
         else
-          SendInvReqToSharers(msg.src, h);
+          SendInvReqToSharers(msg.src, h, msg);
           hs := HT_SE_A;
           HomeNodes[h].requester := msg.src;
           HomeNodes[h].request_type := msg.mtype;
@@ -1497,13 +1592,17 @@ alias hv:HomeNodes[h].val do
       -- sharer or not, requester can receive the data
       if IsSharer(msg.src, h) then
         if cnt = 1 then -- the only sharer request upgrade
-          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          E, 1);
           RemoveFromSharersList(msg.src, h);
-          Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED, UNDEFINED);
+          Send(Data, msg.src, h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+          UNDEFINED, UNDEFINED);
           hs := H_E;
           HomeNodes[h].owner := msg.src;
         else 
-          SendInvReqToSharers(msg.src, h);
+          SendInvReqToSharers(msg.src, h, msg);
           RemoveFromSharersList(msg.src, h);
           hs := HT_SE_A;
           HomeNodes[h].requester := msg.src;
@@ -1511,11 +1610,15 @@ alias hv:HomeNodes[h].val do
         endif
       else -- requester is not sharer
         if cnt = 0 then -- no sharer, impossible but write it defensively
-          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
-          Send(DATA, msg.src, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+          Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+          E, 1);
+          Send(Data, msg.src, h, H2D_DATA, HomeNodes[h].val, UNDEFINED, 
+          msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+          UNDEFINED, UNDEFINED);
           hs := H_E;
         else
-          SendInvReqToSharers(msg.src, h);
+          SendInvReqToSharers(msg.src, h, msg);
           hs := HT_SE_A;
           HomeNodes[h].requester := msg.src;
           HomeNodes[h].request_type := msg.mtype;
@@ -1529,7 +1632,7 @@ alias hv:HomeNodes[h].val do
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].flag := flag_EI_D;
-      SendInvReqToSharers(HomeNodes[h].owner, h);
+      SendInvReqToSharers(HomeNodes[h].owner, h, msg);
     
     case ItoMWr:
       -- request from device(I)
@@ -1538,17 +1641,21 @@ alias hv:HomeNodes[h].val do
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
       HomeNodes[h].flag := flag_EI_D;
-      SendInvReqToSharers(HomeNodes[h].owner, h);
+      SendInvReqToSharers(HomeNodes[h].owner, h, msg);
 
     case CleanEvictNoData: 
       -- request from device(E/S)
       -- home send GO-I
       if cnt = 1 then -- the requester is the only sharer
         hs := H_I;
-        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I);
+        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
         RemoveFromSharersList(msg.src, h);
       else
-        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I);
+        Send(GO, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
         RemoveFromSharersList(msg.src, h);
       endif
 
@@ -1558,7 +1665,7 @@ alias hv:HomeNodes[h].val do
       hs := HT_SI_A;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
-      SendInvReqToSharers(HomeNodes[h].owner, h);
+      SendInvReqToSharers(HomeNodes[h].owner, h, msg);
 
     case WrInv:
       -- request from devive(I)
@@ -1566,10 +1673,10 @@ alias hv:HomeNodes[h].val do
       hs := HT_SI_A;
       HomeNodes[h].requester := msg.src;
       HomeNodes[h].request_type := msg.mtype;
-      SendInvReqToSharers(HomeNodes[h].owner, h);
+      SendInvReqToSharers(HomeNodes[h].owner, h, msg);
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
 
     endswitch;
 
@@ -1578,20 +1685,26 @@ alias hv:HomeNodes[h].val do
 
     case RspIHitSE:
     if cnt = 0 then
-      if request_type = WrInv then
-        HomeNodes[h].flag := flag_SI_A; -- handshake logic
-        Send(WritePull, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED);
+      if HomeNodes[h].request_type = WrInv then
+        -- HomeNodes[h].flag := flag_SI_A; -- handshake logic
+        Send(WritePull, HomeNodes[h].owner , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
       else -- CLFlush
         hs := H_I;
-        Send(GO, HomeNodes[h].request, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I); -- GO-I
+        Send(GO, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
       endif
     endif
 
-    case Data
+    case Data:
       if (HomeNodes[h].flag = flag_SI_A) & (msg.src = HomeNodes[h].requester) then -- from requester's data
       
         hs := H_I;
-        Send(Go, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, I);
+        Send(GO, HomeNodes[h].requester , h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        I, 1);
         HomeNodes[h].owner := HomeNodes[h].requester;
         HomeNodes[h].val := msg.val;
         undefine HomeNodes[h].requester;
@@ -1644,7 +1757,7 @@ alias hv:HomeNodes[h].val do
     --  msg_processed := false;
       
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
 
     endswitch;
 
@@ -1652,37 +1765,48 @@ alias hv:HomeNodes[h].val do
     switch msg.mtype
 
     case RspIHitSE:
-      Assert (HomeNodes[h].request_type != UNDEFINED) "In HT_SE_A, request_type should be defined"
+      --Assert (HomeNodes[h].request_type != UNDEFINED) "In HT_SE_A, request_type should be defined";
+      Assert (IsUndefined(HomeNodes[h].request_type) = false) "In HT_SE_A, request_type should be defined"; 
       if cnt = 0 then
         switch HomeNodes[h].request_type
 
         case RdOwn:
         hs := H_E;
-        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
-        Send(DATA, HomeNodes[h].requester, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        E, 1);
+        Send(Data, HomeNodes[h].requester, h, H2D_DATA, HomeNodes[h].val, UNDEFINED,
+        msg.uqid, UNDEFINED, UNDEFINED, 0, 0, UNDEFINED, 0,
+        UNDEFINED, UNDEFINED);
         HomeNodes[h].owner := HomeNodes[h].requester;
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_type;
 
         case RdOwnNoData:
-        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, E);
-        -- Send(DATA, HomeNodes[h].requester, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
+        Send(GO, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        E, 1);
+        -- Send(Data, HomeNodes[h].requester, h, H2D_DATA, UNDEFINED, HomeNode[h].val, UNDEFINED, UNDEFINED);
         HomeNodes[h].owner := HomeNodes[h].requester;
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_type;
 
         case WrCur:
-        Assert (HomeNodes[h].flag = flag_ES_D) "flag_ES_D for ItoMWr"
+        Assert (HomeNodes[h].flag = flag_ES_D) "flag_ES_D for ItoMWr";
         hs := H_E;
-        Send(GO_WritePull, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(GO_WritePull, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
         HomeNodes[h].owner := HomeNodes[h].requester;
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_type;
 
         case ItoMWr:
-        Assert (HomeNodes[h].flag = flag_EI_D) "flag_EI_D for ItoMWr"
+        Assert (HomeNodes[h].flag = flag_EI_D) "flag_EI_D for ItoMWr";
         hs := H_E;
-        Send(GO_WritePull, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(GO_WritePull, HomeNodes[h].requester, h, H2D_RSP, UNDEFINED, UNDEFINED, 
+        msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        msg.uqid, 1);
         HomeNodes[h].owner := HomeNodes[h].requester;
         undefine HomeNodes[h].requester;
         undefine HomeNodes[h].request_type;
@@ -1734,13 +1858,13 @@ alias hv:HomeNodes[h].val do
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     
     endswitch
   
   
 case H_M: -- Author: Ruihan 11/20
-    Assert (IsUndefined(HomeNodes.owner) = false) 
+    Assert (IsUndefined(HomeNodes[h].owner) = false) 
        "HomeNodes has no owner, but line is Modified";
 
     HomeNodes[h].requester := msg.src;
@@ -1749,7 +1873,7 @@ case H_M: -- Author: Ruihan 11/20
     switch msg.mtype
     case RdCurr: --updated
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request RdCurr"
+        "owner should not request RdCurr";
       hs := HT_MM_AD; --waiting for data and snoop rsp from owner, update memory, send data but no GO
       Send(SnpCur, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1764,8 +1888,8 @@ case H_M: -- Author: Ruihan 11/20
 
     case DirtyEvict: --updated
       assert (msg.src = HomeNodes[h].owner)
-        "only owner can request DirtyEvict"
-      assert "only one DirtyEvict per device cacheline"
+        "only owner can request DirtyEvict";
+      -- assert "only one DirtyEvict per device cacheline"
       hs := HT_MI_D; --waiting for data from owner=requester, update memory
       Send(GO_WritePull, msg.src, h, H2D_RSP, UNDEFINED, UNDEFINED, 
       msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1774,7 +1898,7 @@ case H_M: -- Author: Ruihan 11/20
 
     case WrInv: --updated
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request WrInv"
+        "owner should not request WrInv";
       hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send WritePull to requester, wait for data from requester, update memory, send GO_I
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1783,7 +1907,7 @@ case H_M: -- Author: Ruihan 11/20
 
     case ItoMWr:
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request ItoMWr"
+        "owner should not request ItoMWr";
       hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send GO_WritePull to requester, wait for data from requester, update memory
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1792,7 +1916,7 @@ case H_M: -- Author: Ruihan 11/20
 
     case RdOwn:
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request RdOwn"
+        "owner should not request RdOwn";
       hs := HT_ME_AD; --waiting for data and snop rsp from owner, update memory, send GO and data to requester
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1801,17 +1925,16 @@ case H_M: -- Author: Ruihan 11/20
 
     case WrCur:
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request WrCur"
+        "owner should not request WrCur";
       hs := HT_MI_AD1; --waiting for data and snoop rsp from owner, update memory, send GO_WritePull to requester, wait for data from requester, update memory
       Send(SnpInv, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       UNDEFINED, UNDEFINED);
-    else
-      ErrorUnhandledMsg(msg, HomeType);
+
 
     case RdShared:
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request RdShared"
+        "owner should not request RdShared";
       hs := HT_MS_AD; --waiting for data and snoop rsp from owner, update memory, send GO and data to requester
       Send(SnpData, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
@@ -1821,13 +1944,15 @@ case H_M: -- Author: Ruihan 11/20
 
     case RdAny:
       assert (msg.src != HomeNodes[h].owner)
-        "owner should not request RdAny"
+        "owner should not request RdAny";
       hs := HT_MS_AD; --waiting for data and snoop rsp from owner, update memory, send GO and data to requester
       Send(SnpData, HomeNodes[h].owner , h, H2D_REQ, UNDEFINED, msg.addr, 
       UNDEFINED, msg.cqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
       UNDEFINED, UNDEFINED);
       AddToSharersList(msg.src, h);
       undefine HomeNodes[h].owner;
+    else
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MM_AD:
@@ -1880,7 +2005,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MM_A:
@@ -1932,7 +2057,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MM_D:
@@ -1987,7 +2112,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MI_AD1: -- 1 suffix means it is receiving data from owner, there will be one more *_D in the future for requester
@@ -2038,7 +2163,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
  
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MI_A1:
@@ -2104,7 +2229,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MI_D1:
@@ -2171,12 +2296,12 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;  
 
   case HT_MI_AD:
     assert (HomeNodes[h].request_type = CLFlush)
-      "only CLFlush should be here"
+      "only CLFlush should be here";
     switch msg.mtype
     case Data:
       hs := HT_MI_A;
@@ -2227,7 +2352,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
  
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MI_A:
@@ -2279,7 +2404,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;  
 
   case HT_MI_D:
@@ -2346,7 +2471,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ME_AD:
@@ -2403,7 +2528,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
  
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ME_A:
@@ -2455,7 +2580,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_ME_D:
@@ -2514,7 +2639,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MS_AD:
@@ -2571,7 +2696,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
    
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
   case HT_MS_A:
@@ -2623,7 +2748,7 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;    
 
   case HT_MS_D:  
@@ -2682,78 +2807,9 @@ case H_M: -- Author: Ruihan 11/20
       msg_processed := false;
 
     else
-      ErrorUnhandledMsg(msg, HomeType);
+      ErrorUnhandledMsg(msg,  h);
     endswitch;
 
-  -- case HT_MPending:
-  --   switch msg.mtype
-   
-  --   case WBReq:
-  --     Assert (!IsUnDefined(HomeNodes.owner)) "owner undefined";
-  --     if(HomeNodes.owner = msg.src) then
-  --       Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-  --       HomeNodes.val := msg.val;
-  --       undefine HomeNodes.owner;
-  --     else 
-  --       HomeNodes.state := H_Modified;
-  --       HomeNodes.val := msg.val;
-  --       Send(ReadAck, HomeNodes.owner, HomeType, VC2, HomeNodes.val, UNDEFINED, 0);
-  --     endif;
-  --   case WBFwd:
-  --     if (IsUnDefined(HomeNodes.owner)) then
-  --       HomeNodes.state := H_Invalid;
-  --     else 
-  --       HomeNodes.state := H_Modified;
-  --       HomeNodes.val := msg.val;
-  --     endif;
-  --   case ReadReq:
-  --   	msg_processed := false; -- stall message in InBox
-  --   case ReadReqX:
-  --   	msg_processed := false; -- stall message in InBox
-  --   else
-  --     ErrorUnhandledMsg(msg, HomeType);
-
-  --   endswitch;
-
-  -- case HT_SPending:
-  --   switch msg.mtype
-   
-  --   case WBReq:
-  --     Assert (IsUnDefined(HomeNodes.owner)&(cnt !=0)) "owner and sharer all undefined";
-  --     HomeNodes.state := H_Shared;
-  --     HomeNodes.val := msg.val;
-      
-  --     RemoveFromSharersList(msg.src);
-      
-  --     for n:Node do
-  --       if (IsMember(n, Proc) & IsSharer(n)) then
-  --         Send(ReadAck, n, HomeType, VC2, HomeNodes.val, UNDEFINED, UNDEFINED);
-  --       endif;
-  --     endfor;
-
-  --   case WBShared:
-  --     if (cnt != 0) then
-  --       HomeNodes.state := H_Shared;
-  --       HomeNodes.val := msg.val;
-  --     else 
-  --       HomeNodes.state := H_Invalid;
-  --       HomeNodes.val := msg.val;
-  --     endif;
-
-  --   case ReadReq:
-  --   	msg_processed := false; -- stall message in InBox
-
-  --   case ReadReqX:
-  --   	msg_processed := false; -- stall message in InBox
-  --   case PutS:
-  --     Send(WBAck, msg.src, HomeType, VC1, UNDEFINED, UNDEFINED, UNDEFINED);
-  --     if(IsSharer(msg.src)) then
-  --       RemoveFromSharersList(msg.src);
-  --     endif;
-  --   else
-  --     ErrorUnhandledMsg(msg, HomeType);
-
-    endswitch;
   endswitch;
   endalias;
   endalias;
@@ -2764,7 +2820,7 @@ Procedure ProcReceive(msg:Message; p:Proc);
 Begin
 --  put "Receiving "; put msg.mtype; put " on VC"; put msg.vc; 
 --  put " at proc "; put p; put "\n";
-  home.
+  -- home.
   -- default to 'processing' message.  set to false otherwise
   msg_processed := true;
 
@@ -2773,28 +2829,14 @@ Begin
   alias paddr:Procs[p].addr do
   -- alias p_pendinvack :Procs[p].PendingInvAcks do
   switch ps
-  case P_Invalid:
+  case P_I:
     switch msg.mtype
     
     else
       ErrorUnhandledMsg(msg, p);
     endswitch;
 
-
-
-  /*
-  case P_S:
-
-    switch msg.mtype
-    case InvalidReq:
-      Send(InvalidAck, msg.fwd_dst, p, VC2, UNDEFINED, UNDEFINED, UNDEFINED);
-      Undefine pv;
-      ps := P_Invalid;
-    else
-      ErrorUnhandledMsg(msg, p);
-    endswitch;
-  */
-  case PT_IS_DA:
+  case PT_IS_AD:
     switch msg.mtype
     case GO:
       if msg.rspdata = S then 
@@ -2804,7 +2846,7 @@ Begin
       else 
         msg_processed := false;
       endif;
-    case DATA:
+    case Data:
         pv := msg.val;
         ps := PT_IS_A;
     
@@ -2833,7 +2875,7 @@ Begin
     
   case PT_IS_D:
     switch msg.mtype
-    case DATA:
+    case Data:
       pv := msg.val;
       ps := P_S;
       
@@ -2843,7 +2885,7 @@ Begin
       ErrorUnhandledMsg(msg, p);
     endswitch;
   
-  case PT_IM_DA:
+  case PT_IM_AD:
     switch msg.mtype
     case GO:
       if msg.rspdata = M then
@@ -2851,7 +2893,7 @@ Begin
       else
         msg_processed := false;
       endif;
-    case DATA:
+    case Data:
       pv := msg.val;
       ps := PT_IM_A;
     else
@@ -2860,7 +2902,7 @@ Begin
 
   case PT_IM_D:
     switch msg.mtype
-    case DATA:
+    case Data:
       pv := msg.val;
       ps := P_M;
     else
@@ -2882,7 +2924,7 @@ Begin
   case PT_SI_GOI:
     switch msg.mtype
     case GO:
-      Assert (msg.rsp = I) "The GO received should be GO-I";
+      Assert (msg.rspdata = I) "The GO received should be GO-I";
       ps := P_I;
       undefine paddr;
       undefine pv;
@@ -2899,7 +2941,7 @@ Begin
       Send(RspSHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED ,
           UNDEFINED, msg.uqid, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
           UNDEFINED, UNDEFINED);
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED,
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED,
         UNDEFINED, msg.uqid, UNDEFINED, 0, 0, 0, UNDEFINED, 
         UNDEFINED, UNDEFINED);
         
@@ -2918,7 +2960,7 @@ Begin
   case PT_II_GOI:
     switch msg.mtype
     case GO:
-      Assert (msg.rsp = I) "The GO received should be GO-I";
+      Assert (msg.rspdata = I) "The GO received should be GO-I";
       ps := P_I;
 
     -- impossible to receive other message in I state
@@ -2932,11 +2974,10 @@ Begin
     switch msg.mtype
     case WritePull:
       ps  := PT_II_GO;
-      ruleset v: Value do
-        Send(DATA, msg.src, p, D2H_DATA, v, UNDEFINED,
-        UNDEFINED, msg.cqid, UNDEFINED, 0, 0, 0, UNDEFINED, 
-        UNDEFINED, UNDEFINED);
-      endruleset;
+      Send(Data, msg.src, p, D2H_DATA, Procs[p].mem_write_val, UNDEFINED,
+      UNDEFINED, msg.cqid, UNDEFINED, 0, 0, 0, UNDEFINED, 
+      UNDEFINED, UNDEFINED);
+      undefine Procs[p].mem_write_val;
     else
       ErrorUnhandledMsg(msg, p);
     endswitch;
@@ -2969,10 +3010,10 @@ Begin
     
     case GO_WritePull:
       ps := P_E;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED,
+      Send(Data, msg.src, p, D2H_DATA, Procs[p].mem_write_val, UNDEFINED,
         UNDEFINED, msg.cqid, UNDEFINED, 0, 0, 0, UNDEFINED, 
         UNDEFINED, UNDEFINED);
-
+      undefine Procs[p].mem_write_val;
     else
       ErrorUnhandledMsg(msg, p);
 
@@ -2981,7 +3022,7 @@ Begin
   case P_E:
     switch msg.mtype
     case SnpCur:
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspVFwdV, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -2989,7 +3030,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpData:
       ps  := P_S;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspSHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -2997,7 +3038,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpInv:
       ps  := P_I;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspIHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3018,7 +3059,7 @@ Begin
         msg_processed := false;
       endif;
     case SnpCur:
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspVFwdV, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3026,7 +3067,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpData:
       ps  := PT_SI_GOI;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspSHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3034,7 +3075,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpInv:
       ps  := PT_II_GOI;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspIHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3047,14 +3088,14 @@ Begin
   case PT_EI_GP:
     switch msg.mtype
     case GO_WritePull:
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       ps  := P_I;
       undefine pv;
       undefine paddr;
     case SnpCur:
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspVFwdV, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3062,7 +3103,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpData:
       ps  := PT_SI_GP;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspSHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3070,7 +3111,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpInv:
       ps  := PT_II_GP;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspIHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3085,14 +3126,14 @@ Begin
     switch msg.mtype
     case GO_WritePull:
       assert (msg.rspdata = I) "The GO received should be GO-I";
-      ps := P_Invalid;
+      ps := P_I;
       Send(Data, msg.src, p, D2H_DATA, pv, Procs[p].addr, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       undefine paddr;
       undefine pv;
     case SnpCur:
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspVFwdV, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3100,7 +3141,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpData:
       ps  := PT_SI_GP;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspSHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3108,7 +3149,7 @@ Begin
       UNDEFINED, UNDEFINED);
     case SnpInv:
       ps  := PT_II_GP;
-      Send(DATA, msg.src, p, D2H_DATA, pv, UNDEFINED, 
+      Send(Data, msg.src, p, D2H_DATA, pv, UNDEFINED, 
       UNDEFINED, msg.uqid, 0, 0, UNDEFINED, 0, UNDEFINED,
       UNDEFINED, UNDEFINED);
       Send(RspIHitSE, msg.src, p, D2H_RSP, UNDEFINED, UNDEFINED, 
@@ -3140,19 +3181,20 @@ ruleset n:Proc Do
 ruleset ad: Address do  
   alias p:Procs[n] Do
   
+  ruleset id: UQIDType Do
   rule "device in state I, send RdOwn"
     p.state = P_I
   ==>
-    p.state := PT_IM_DA;   
+    p.state := PT_IM_AD;   
     p.addr  := ad;   
       if ad = 0 then
         
         Send(RdOwn, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       else
         Send(RdOwn, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       endif;
   endrule;
@@ -3160,60 +3202,48 @@ ruleset ad: Address do
   rule "device in state I, send RdAny"
     p.state = P_I
   ==>
-    p.state := PT_IM_DA;   
+    p.state := PT_IM_AD;   
     p.addr  := ad;     
       if ad = 0 then
         Send(RdAny, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       else
         Send(RdAny, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
+  ruleset v:Value Do
   rule "device in state I, send WrInv"
     p.state = P_I
   ==>
-    p.state := PT_II_WP;      
+    p.state := PT_II_WP;   
+    p.mem_write_val := v;   
       if ad = 0 then
         Send(WrInv, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       else
         Send(WrInv, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       endif;
   endrule;
-  /*
-  rule "device in state M, send DirtyEvict"
-    p.state = P_M
-  ==>
-    p.state := PT_MI_GP;      
-      if ad = 0 then
-        Send(DirtyEvict, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
-        UNDEFINED, UNDEFINED);
-      else
-        Send(DirtyEvict, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
-        UNDEFINED, UNDEFINED);
-      endif;
-  endrule;
-  */
+  endruleset;
+
   rule "device in state E, send CleanEvict"
     p.state = P_E
   ==>
     p.state := PT_EI_GP;      
       if ad = 0 then
         Send(CleanEvict, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       else
         Send(CleanEvict, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       endif;
   endrule;
@@ -3226,53 +3256,60 @@ ruleset ad: Address do
     undefine p.addr;  
       if ad = 0 then
         Send(CleanEvictNoData, Home0, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       else
         Send(CleanEvictNoData, Home1, n, D2H_REQ, UNDEFINED, ad,
-        0, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      endif;
+  endrule;
+
+  rule "device in state I, send WrCur"
+    (p.state = P_I)
+    ==>
+      p.state := PT_IE_GP;      
+      if ad = 0 then
+        Send(WrCur, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+      else
+        Send(WrCur, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
         UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   ruleset v:Value Do
-  rule "device in state E, store data"
-    p.state = P_E
-  ==>
-    p.state := P_M;      
-    p.val   := v;
-  endrule;
+    rule "device in state I, send ItoMWr"
+      (p.state = P_I)
+      ==>
+        p.state := PT_IE_GP; 
+        p.mem_write_val := v;
+        if ad = 0 then
+          Send(ItoMWr, Home0, n, D2H_REQ, UNDEFINED, ad,
+          id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+          UNDEFINED, UNDEFINED);
+        else
+          Send(ItoMWr, Home1, n, D2H_REQ, UNDEFINED, ad,
+          id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+          UNDEFINED, UNDEFINED);
+        endif;
+    endrule;
   endruleset;
-
-  rule "device in state I, send WrCur"
-    (p.state = P_I)
-    ==>
-      p.state := P_IE_GP;      
-      if ad = 0 then
-        Send(WrCur, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-      else
-        Send(WrCur, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-      endif;
-  endrule;
-
-  rule "device in state I, send ItoMWr"
-    (p.state = P_I)
-    ==>
-      p.state := P_IE_GP; 
-      if ad = 0 then
-        Send(ItoMWr, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-      else
-        Send(ItoMWr, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-  endrule;
 
   rule "device in state I, send RdShared"
     (p.state = P_I)
     ==>
-      p.state := P_IS_DA;      
+      p.state := PT_IS_AD;      
       if ad = 0 then
-        Send(RdShared, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdShared, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(RdShared, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdShared, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
@@ -3281,53 +3318,72 @@ ruleset ad: Address do
     ==>
       p.state := P_I;
       if ad = 0 then
-        Send(RdCurr, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdCurr, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(RdCurr, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdCurr, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   rule "device in state S, send CleanEvict"
     (p.state = P_S)
     ==>
-      p.state := P_SI_GP;
+      p.state := PT_SI_GP;
       if ad = 0 then
-        Send(CleanEvict, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CleanEvict, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(CleanEvict, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CleanEvict, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   rule "device in state S, send CleanEvictNoData"
     (p.state = P_S)
     ==>
-      p.state := P_SI_GOI;
+      p.state := PT_SI_GOI;
       if ad = 0 then
-        Send(CleanEvictNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CleanEvictNoData, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(CleanEvictNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CleanEvictNoData, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   rule "device in state S, send RdOwnNoData"
     (p.state = P_S)
     ==>
-      p.state := P_SM_DA;      
+      p.state := PT_SM_AD;      
       if ad = 0 then
-        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   rule "device in state S, send RdOwnNoData"
     (p.state = P_S)
     ==>
-      p.state := P_SM_GOE;      
+      p.state := PT_SM_GOE;      
       if ad = 0 then
-        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
-      else
-        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(RdOwnNoData, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
+        Send(RdOwnNoData, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
@@ -3341,9 +3397,13 @@ ruleset ad: Address do
     ==>
       p.state := PT_II_GOI;      
       if ad = 0 then
-        Send(CLFlush, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CLFlush, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(CLFlush, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CLFlush, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
@@ -3352,23 +3412,44 @@ ruleset ad: Address do
     ==>
       p.state := PT_II_GOI;      
       if ad = 0 then
-        Send(CacheFlushed, Home0, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CacheFlushed, Home0, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       else
-        Send(CacheFlushed, Home1, n, D2H_REQ, UNDEFINED, UNDEFINED, UNDEFINED);
+        Send(CacheFlushed, Home1, n, D2H_REQ, UNDEFINED, ad,
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, 
+        UNDEFINED, UNDEFINED);
       endif;
   endrule;
 
   rule "device in state M, send DirtyEvict"
     (p.state = P_M)
     ==>
-      p.state := P_MI_GP;
+      p.state := PT_MI_GP;
       if ad = 0 then
-        Send(DirtyEvict, Home0, n, D2H_REQ, p.val, UNDEFINED, UNDEFINED);
+        Send(DirtyEvict, Home0, n, D2H_REQ, p.val, ad, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        UNDEFINED, UNDEFINED);
       else
-        Send(DirtyEvict, Home1, n, D2H_REQ, p.val, UNDEFINED, UNDEFINED);
+        Send(DirtyEvict, Home1, n, D2H_REQ, p.val, ad, 
+        id, UNDEFINED, 0, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED,
+        UNDEFINED, UNDEFINED);
       endif;
       undefine p.val;
   endrule;
+  endruleset;
+  
+
+  ruleset v:Value Do
+    rule "device in state E, store data"
+      p.state = P_E
+    ==>
+      p.state := P_M;      
+      p.val   := v;
+    endrule;
+  endruleset;
+
+  
 
   endalias;
 endruleset;
@@ -3388,7 +3469,7 @@ ruleset n:Node do
 
       if IsMember(n, Home)
       then
-        HomeReceive(msg);
+        HomeReceive(msg, n);
       else
         ProcReceive(msg, n);
 			endif;
@@ -3415,7 +3496,7 @@ ruleset n:Node do
     ==>
       if IsMember(n, Home)
       then
-        HomeReceive(InBox[n][vc]);
+        HomeReceive(InBox[n][vc], n);
       else
         ProcReceive(InBox[n][vc], n);
 			endif;
@@ -3436,22 +3517,24 @@ endruleset;
 ----------------------------------------------------------------------
 startstate
 
-	For v:Value do
+	For h:Home do
       -- home node initialization
-      HomeNodes.state := H_Invalid;
-      undefine HomeNodes.owner;
-      undefine HomeNodes.sharers;
-      undefine HomeNodes.requester;
-      undefine HomeNodes.request_type;
-      HomeNodes.val := v;
+      HomeNodes[h].state := H_I;
+      undefine HomeNodes[h].owner;
+      undefine HomeNodes[h].sharers;
+      undefine HomeNodes[h].requester;
+      undefine HomeNodes[h].request_type;
+      HomeNodes[h].val := 0;
 	endfor;
-	LastWrite := HomeNodes.val;
+	LastWrite0 := HomeNodes[Home0].val;
+  LastWrite1 := HomeNodes[Home1].val;
   
   -- processor initialization
   for i:Proc do
-    Procs[i].state := P_Invalid;
+    Procs[i].state := P_I;
     undefine Procs[i].val;
     undefine Procs[i].addr;
+    undefine Procs[i].mem_write_val;
     -- undefine Procs[i].PendingInvAcks;
   endfor;
 
@@ -3464,40 +3547,62 @@ endstartstate;
 ----------------------------------------------------------------------
 
 invariant "Invalid implies empty owner"
-  HomeNodes.state = H_I
+  Forall h : Home Do	
+      HomeNodes[h].state = H_I
     ->
-      IsUndefined(HomeNodes.owner);
+      IsUndefined(HomeNodes[h].owner)
+  end;
 
-invariant "value in memory matches value of last write, when invalid"
-     HomeNodes.state = H_I 
+invariant "value in addr0 matches value of last write, when invalid"
+  -- Forall h : Home Do	
+      HomeNodes[Home0].state = H_I | HomeNodes[Home0].state = H_S
     ->
-			HomeNodes.val = LastWrite;
+			HomeNodes[Home0].val = LastWrite0;
+  -- end;
+
+invariant "value in addr1 matches value of last write, when invalid"
+  -- Forall h : Home Do	
+      HomeNodes[Home1].state = H_I | HomeNodes[Home1].state = H_S
+    ->
+			HomeNodes[Home1].val = LastWrite1;
+  -- end;
 
 -- Here are some invariants that are helpful for validating shared state.
 
 invariant "modified implies empty sharers list"
-  HomeNodes.state = H_M
+  Forall h : Home Do	
+      HomeNodes[h].state = H_M
     ->
-      MultiSetCount(i:HomeNodes.sharers, true) = 0;
+      MultiSetCount(i:HomeNodes[h].sharers, true) = 0
+  end;
 
 invariant "Invalid implies empty sharer list"
-  HomeNodes.state = H_I
+  Forall h : Home Do	
+      HomeNodes[h].state = H_I
     ->
-      MultiSetCount(i:HomeNodes.sharers, true) = 0;
-
+      MultiSetCount(i:HomeNodes[h].sharers, true) = 0
+  end;
+/*
 invariant "values in memory matches value of last write, when shared or invalid"
   Forall n : Proc Do	
      HomeNodes.state = H_S | HomeNodes.state = H_I
     ->
 			HomeNodes.val = LastWrite
 	end;
-
-invariant "values in shared state match memory"
+*/
+invariant "addr 0 values in shared state match memory"
   Forall n : Proc Do	
-     HomeNodes.state = H_S & Procs[n].state = P_S
+     HomeNodes[Home0].state = H_S & Procs[n].state = P_S & Procs[n].addr = 0
     ->
-			HomeNodes.val = Procs[n].val
+			HomeNodes[Home0].val = Procs[n].val
 	end;
 
-invariant "at most one flag = 1"
+invariant "addr 1 values in shared state match memory"
+  Forall n : Proc Do	
+     HomeNodes[Home1].state = H_S & Procs[n].state = P_S & Procs[n].addr = 1
+    ->
+			HomeNodes[Home1].val = Procs[n].val
+	end;
+
+-- invariant "at most one flag = 1"
 -- TODO
