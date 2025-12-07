@@ -972,9 +972,9 @@ class mu_1__type_7: public mu__byte
     else return ( s << "Undefined" );
   };
 
-  mu_1__type_7 (char *name, int os): mu__byte(46, 78, 6, name, os) {};
-  mu_1__type_7 (void): mu__byte(46, 78, 6) {};
-  mu_1__type_7 (int val): mu__byte(46, 78, 6, "Parameter or function result.", 0)
+  mu_1__type_7 (char *name, int os): mu__byte(46, 84, 6, name, os) {};
+  mu_1__type_7 (void): mu__byte(46, 84, 6) {};
+  mu_1__type_7 (int val): mu__byte(46, 84, 6, "Parameter or function result.", 0)
   {
      operator=(val);
   };
@@ -997,7 +997,7 @@ class mu_1__type_7: public mu__byte
   };
 };
 
-char *mu_1__type_7::values[] = {"H_M","H_E","H_S","H_I","HT_SI_A","HT_SE_A","HT_II_D","HT_II_AD","HT_IS_A","HT_MM_AD","HT_MM_A","HT_MM_D","HT_MI_AD","HT_MI_D","HT_MI_A","HT_MI_AD1","HT_MI_A1","HT_MI_D1","HT_ME_AD","HT_ME_A","HT_ME_D","HT_EI_AD","HT_EI_A","HT_EI_D","HT_EE_AD","HT_EE_A","HT_EE_D","HT_ES_AD","HT_ES_A","HT_ES_D","HT_MS_AD","HT_MS_D","HT_MS_A",NULL };
+char *mu_1__type_7::values[] = {"H_M","H_E","H_S","H_I","HT_SI_A","HT_SI_D","HT_SI_AD","HT_SE_AD","HT_SE_D","HT_II_A","HT_II_D","HT_II_AD","HT_IS_A","HT_IE_AD","HT_IE_D","HT_MM_AD","HT_MM_A","HT_MM_D","HT_MI_AD","HT_MI_D","HT_MI_A","HT_MI_AD1","HT_MI_A1","HT_MI_D1","HT_ME_AD","HT_ME_A","HT_ME_D","HT_EI_AD","HT_EI_A","HT_EI_D","HT_EE_AD","HT_EE_A","HT_EE_D","HT_ES_AD","HT_ES_A","HT_ES_D","HT_MS_AD","HT_MS_D","HT_MS_A",NULL };
 
 /*** end of enum declaration ***/
 mu_1__type_7 mu_1__type_7_undefined_var;
@@ -1253,17 +1253,17 @@ class mu_1__type_10: public mu__byte
   friend ostream& operator<< (ostream& s, mu_1__type_10& val)
   {
     if (val.defined())
-      return ( s << mu_1__type_10::values[ int(val) - 79] );
+      return ( s << mu_1__type_10::values[ int(val) - 85] );
     else return ( s << "Undefined" );
   };
 
-  mu_1__type_10 (char *name, int os): mu__byte(79, 83, 3, name, os) {};
-  mu_1__type_10 (void): mu__byte(79, 83, 3) {};
-  mu_1__type_10 (int val): mu__byte(79, 83, 3, "Parameter or function result.", 0)
+  mu_1__type_10 (char *name, int os): mu__byte(85, 89, 3, name, os) {};
+  mu_1__type_10 (void): mu__byte(85, 89, 3) {};
+  mu_1__type_10 (int val): mu__byte(85, 89, 3, "Parameter or function result.", 0)
   {
      operator=(val);
   };
-  char * Name() { return values[ value() -79]; };
+  char * Name() { return values[ value() -85]; };
   virtual void Permute(PermSet& Perm, int i);
   virtual void SimpleCanonicalize(PermSet& Perm);
   virtual void Canonicalize(PermSet& Perm);
@@ -1276,7 +1276,7 @@ class mu_1__type_10: public mu__byte
   virtual void print()
   {
     if (defined())
-      cout << name << ":" << values[ value() -79] << '\n';
+      cout << name << ":" << values[ value() -85] << '\n';
     else
       cout << name << ":Undefined\n";
   };
@@ -1496,17 +1496,17 @@ class mu_1__type_11: public mu__byte
   friend ostream& operator<< (ostream& s, mu_1__type_11& val)
   {
     if (val.defined())
-      return ( s << mu_1__type_11::values[ int(val) - 84] );
+      return ( s << mu_1__type_11::values[ int(val) - 90] );
     else return ( s << "Undefined" );
   };
 
-  mu_1__type_11 (char *name, int os): mu__byte(84, 110, 5, name, os) {};
-  mu_1__type_11 (void): mu__byte(84, 110, 5) {};
-  mu_1__type_11 (int val): mu__byte(84, 110, 5, "Parameter or function result.", 0)
+  mu_1__type_11 (char *name, int os): mu__byte(90, 117, 5, name, os) {};
+  mu_1__type_11 (void): mu__byte(90, 117, 5) {};
+  mu_1__type_11 (int val): mu__byte(90, 117, 5, "Parameter or function result.", 0)
   {
      operator=(val);
   };
-  char * Name() { return values[ value() -84]; };
+  char * Name() { return values[ value() -90]; };
   virtual void Permute(PermSet& Perm, int i);
   virtual void SimpleCanonicalize(PermSet& Perm);
   virtual void Canonicalize(PermSet& Perm);
@@ -1519,13 +1519,13 @@ class mu_1__type_11: public mu__byte
   virtual void print()
   {
     if (defined())
-      cout << name << ":" << values[ value() -84] << '\n';
+      cout << name << ":" << values[ value() -90] << '\n';
     else
       cout << name << ":Undefined\n";
   };
 };
 
-char *mu_1__type_11::values[] = {"P_M","P_E","P_S","P_I","PT_MI_GP","PT_IM_A","PT_IM_D","PT_IM_AD","PT_MI_A","PT_II_GOI","PT_II_WP","PT_II_GO","PT_IE_GP","PT_EI_GOI","PT_EI_GP","PT_SE_GOE","PT_IS_A","PT_IS_D","PT_IS_AD","PT_SI_GOI","PT_SI_GP","PT_IE_D","PT_II_GP","PT_SM_AD","PT_SM_A","PT_SM_D","PT_SM_GOE",NULL };
+char *mu_1__type_11::values[] = {"P_M","P_E","P_S","P_I","PT_MI_GP","PT_IM_A","PT_IM_D","PT_IM_AD","PT_MI_A","PT_II_GOI","PT_II_WP","PT_II_GO","PT_IE_GP","PT_EI_GOI","PT_EI_GP","PT_SE_GOE","PT_IS_A","PT_IS_D","PT_IS_AD","PT_SI_GOI","PT_SI_GP","PT_IE_AD","PT_IE_D","PT_IE_A","PT_II_GP","PT_II_D","PT_SE_A","PT_SM_GOE",NULL };
 
 /*** end of enum declaration ***/
 mu_1__type_11 mu_1__type_11_undefined_var;
@@ -2739,66 +2739,73 @@ const int mu_H_E = 47;
 const int mu_H_S = 48;
 const int mu_H_I = 49;
 const int mu_HT_SI_A = 50;
-const int mu_HT_SE_A = 51;
-const int mu_HT_II_D = 52;
-const int mu_HT_II_AD = 53;
-const int mu_HT_IS_A = 54;
-const int mu_HT_MM_AD = 55;
-const int mu_HT_MM_A = 56;
-const int mu_HT_MM_D = 57;
-const int mu_HT_MI_AD = 58;
-const int mu_HT_MI_D = 59;
-const int mu_HT_MI_A = 60;
-const int mu_HT_MI_AD1 = 61;
-const int mu_HT_MI_A1 = 62;
-const int mu_HT_MI_D1 = 63;
-const int mu_HT_ME_AD = 64;
-const int mu_HT_ME_A = 65;
-const int mu_HT_ME_D = 66;
-const int mu_HT_EI_AD = 67;
-const int mu_HT_EI_A = 68;
-const int mu_HT_EI_D = 69;
-const int mu_HT_EE_AD = 70;
-const int mu_HT_EE_A = 71;
-const int mu_HT_EE_D = 72;
-const int mu_HT_ES_AD = 73;
-const int mu_HT_ES_A = 74;
-const int mu_HT_ES_D = 75;
-const int mu_HT_MS_AD = 76;
-const int mu_HT_MS_D = 77;
-const int mu_HT_MS_A = 78;
-const int mu_flag_EM_D = 79;
-const int mu_flag_EI_D = 80;
-const int mu_flag_EE_D = 81;
-const int mu_flag_ES_D = 82;
-const int mu_flag_SI_A = 83;
-const int mu_P_M = 84;
-const int mu_P_E = 85;
-const int mu_P_S = 86;
-const int mu_P_I = 87;
-const int mu_PT_MI_GP = 88;
-const int mu_PT_IM_A = 89;
-const int mu_PT_IM_D = 90;
-const int mu_PT_IM_AD = 91;
-const int mu_PT_MI_A = 92;
-const int mu_PT_II_GOI = 93;
-const int mu_PT_II_WP = 94;
-const int mu_PT_II_GO = 95;
-const int mu_PT_IE_GP = 96;
-const int mu_PT_EI_GOI = 97;
-const int mu_PT_EI_GP = 98;
-const int mu_PT_SE_GOE = 99;
-const int mu_PT_IS_A = 100;
-const int mu_PT_IS_D = 101;
-const int mu_PT_IS_AD = 102;
-const int mu_PT_SI_GOI = 103;
-const int mu_PT_SI_GP = 104;
-const int mu_PT_IE_D = 105;
-const int mu_PT_II_GP = 106;
-const int mu_PT_SM_AD = 107;
-const int mu_PT_SM_A = 108;
-const int mu_PT_SM_D = 109;
-const int mu_PT_SM_GOE = 110;
+const int mu_HT_SI_D = 51;
+const int mu_HT_SI_AD = 52;
+const int mu_HT_SE_AD = 53;
+const int mu_HT_SE_D = 54;
+const int mu_HT_II_A = 55;
+const int mu_HT_II_D = 56;
+const int mu_HT_II_AD = 57;
+const int mu_HT_IS_A = 58;
+const int mu_HT_IE_AD = 59;
+const int mu_HT_IE_D = 60;
+const int mu_HT_MM_AD = 61;
+const int mu_HT_MM_A = 62;
+const int mu_HT_MM_D = 63;
+const int mu_HT_MI_AD = 64;
+const int mu_HT_MI_D = 65;
+const int mu_HT_MI_A = 66;
+const int mu_HT_MI_AD1 = 67;
+const int mu_HT_MI_A1 = 68;
+const int mu_HT_MI_D1 = 69;
+const int mu_HT_ME_AD = 70;
+const int mu_HT_ME_A = 71;
+const int mu_HT_ME_D = 72;
+const int mu_HT_EI_AD = 73;
+const int mu_HT_EI_A = 74;
+const int mu_HT_EI_D = 75;
+const int mu_HT_EE_AD = 76;
+const int mu_HT_EE_A = 77;
+const int mu_HT_EE_D = 78;
+const int mu_HT_ES_AD = 79;
+const int mu_HT_ES_A = 80;
+const int mu_HT_ES_D = 81;
+const int mu_HT_MS_AD = 82;
+const int mu_HT_MS_D = 83;
+const int mu_HT_MS_A = 84;
+const int mu_flag_EM_D = 85;
+const int mu_flag_EI_D = 86;
+const int mu_flag_EE_D = 87;
+const int mu_flag_ES_D = 88;
+const int mu_flag_SI_A = 89;
+const int mu_P_M = 90;
+const int mu_P_E = 91;
+const int mu_P_S = 92;
+const int mu_P_I = 93;
+const int mu_PT_MI_GP = 94;
+const int mu_PT_IM_A = 95;
+const int mu_PT_IM_D = 96;
+const int mu_PT_IM_AD = 97;
+const int mu_PT_MI_A = 98;
+const int mu_PT_II_GOI = 99;
+const int mu_PT_II_WP = 100;
+const int mu_PT_II_GO = 101;
+const int mu_PT_IE_GP = 102;
+const int mu_PT_EI_GOI = 103;
+const int mu_PT_EI_GP = 104;
+const int mu_PT_SE_GOE = 105;
+const int mu_PT_IS_A = 106;
+const int mu_PT_IS_D = 107;
+const int mu_PT_IS_AD = 108;
+const int mu_PT_SI_GOI = 109;
+const int mu_PT_SI_GP = 110;
+const int mu_PT_IE_AD = 111;
+const int mu_PT_IE_D = 112;
+const int mu_PT_IE_A = 113;
+const int mu_PT_II_GP = 114;
+const int mu_PT_II_D = 115;
+const int mu_PT_SE_A = 116;
+const int mu_PT_SM_GOE = 117;
 /*** Variable declaration ***/
 mu_1__type_12 mu_HomeNodes("HomeNodes",0);
 
@@ -3069,28 +3076,57 @@ case mu_H_I:
 switch ((int) mu_msg.mu_mtype) {
 case mu_RdCurr:
 mu_hs = mu_H_I;
-mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_h, mu_H2D_DATA, mu_HomeNodes[mu_h].mu_val, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_h, mu_H2D_DATA, mu_HomeNodes[mu_h].mu_val, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 break;
-case mu_CLFlush:
+case mu_RdOwn:
+mu_hs = mu_HT_IE_AD;
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 1;
+mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
+mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
+break;
+case mu_DirtyEvict:
+mu_hs = mu_HT_II_D;
+mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 0;
+break;
+case mu_CleanEvict:
+mu_hs = mu_HT_II_D;
+mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 0;
+break;
+case mu_CleanEvictNoData:
 mu_hs = mu_H_I;
 mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
+case mu_CLFlush:
+mu_hs = mu_H_I;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+break;
 case mu_ItoMWr:
-mu_hs = mu_HT_II_AD;
-mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
+mu_hs = mu_HT_II_D;
+mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 0;
 break;
 case mu_RdShared:
 if ( mu_IsSharerListEmpty( mu_h ) )
 {
-mu_hs = mu_H_M;
-mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_M, 1 );
+mu_hs = mu_H_E;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
 mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
 }
 else
 {
 mu_hs = mu_H_S;
-mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_S, 1 );
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_S, 1 );
 mu_AddToSharersList ( mu_msg.mu_src, mu_h );
 }
 mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_h, mu_H2D_DATA, mu_hv, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
@@ -3116,9 +3152,22 @@ mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
 mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
 break;
 case mu_WrCur:
-mu_hs = mu_H_E;
-mu_HomeNodes[mu_h].mu_flag = mu_flag_EI_D;
+mu_hs = mu_HT_II_D;
 mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 0;
+break;
+case mu_CacheFlushed:
+mu_hs = mu_H_I;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+break;
+case mu_WrInv:
+mu_hs = mu_HT_II_D;
+mu_Send ( mu_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 0;
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
@@ -3128,9 +3177,20 @@ break;
 case mu_HT_II_AD:
 switch ((int) mu_msg.mu_mtype) {
 case mu_RspIHitI:
+switch ((int) mu_HomeNodes[mu_h].mu_request_type) {
+case mu_ItoMWr:
 mu_hs = mu_HT_II_D;
 mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
-mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_cqid, 1 );
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+break;
+case mu_WrInv:
+mu_hs = mu_HT_II_D;
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
 break;
 case mu_RspIFwdM:
 mu_msg_processed = mu_false;
@@ -3194,13 +3254,189 @@ mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
 break;
 }
 break;
+case mu_HT_IE_AD:
+switch ((int) mu_msg.mu_mtype) {
+case mu_RspIHitSE:
+mu_hs = mu_HT_IE_D;
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+case mu_RspIFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RdCurr:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwn:
+mu_msg_processed = mu_false;
+break;
+case mu_RdShared:
+mu_msg_processed = mu_false;
+break;
+case mu_RdAny:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwnNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_ItoMWr:
+mu_msg_processed = mu_false;
+break;
+case mu_WrCur:
+mu_msg_processed = mu_false;
+break;
+case mu_CLFlush:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_DirtyEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvictNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_WrInv:
+mu_msg_processed = mu_false;
+break;
+case mu_CacheFlushed:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIHitI:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVHitV:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSHitSE:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVFwdV:
+mu_msg_processed = mu_false;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
+break;
+case mu_HT_IE_D:
+switch ((int) mu_msg.mu_mtype) {
+case mu_Data:
+mu_hs = mu_H_E;
+mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
+break;
+case mu_RspIFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RdCurr:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwn:
+mu_msg_processed = mu_false;
+break;
+case mu_RdShared:
+mu_msg_processed = mu_false;
+break;
+case mu_RdAny:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwnNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_ItoMWr:
+mu_msg_processed = mu_false;
+break;
+case mu_WrCur:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIHitSE:
+mu_msg_processed = mu_false;
+break;
+case mu_CLFlush:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_DirtyEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvictNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_WrInv:
+mu_msg_processed = mu_false;
+break;
+case mu_CacheFlushed:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIHitI:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVHitV:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSHitSE:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVFwdV:
+mu_msg_processed = mu_false;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
+break;
 case mu_HT_II_D:
 switch ((int) mu_msg.mu_mtype) {
 case mu_Data:
 mu_hs = mu_H_I;
 mu_hv = mu_msg.mu_val;
-mu_Send ( mu_Data, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_DATA, mu_hv, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+switch ((int) mu_HomeNodes[mu_h].mu_request_type) {
+case mu_ItoMWr:
+if ( !((mu_HomeNodes[mu_h].mu_request_pre) == (0)) ) Error.Error("Assertion failed: HT_II_D Data received, request_pre should be 0");
 mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+case mu_WrCur:
+if ( !((mu_HomeNodes[mu_h].mu_request_pre) == (0)) ) Error.Error("Assertion failed: HT_II_D Data received, request_pre should be 0");
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+case mu_WrInv:
+if ( !((mu_HomeNodes[mu_h].mu_request_pre) == (0)) ) Error.Error("Assertion failed: HT_II_D Data received, request_pre should be 0");
+mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+case mu_CleanEvict:
+if ( !((mu_HomeNodes[mu_h].mu_request_pre) == (0)) ) Error.Error("Assertion failed: HT_II_D Data received, request_pre should be 0");
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+case mu_DirtyEvict:
+if ( !((mu_HomeNodes[mu_h].mu_request_pre) == (0)) ) Error.Error("Assertion failed: HT_II_D Data received, request_pre should be 0");
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
 break;
 case mu_RspIFwdM:
 mu_msg_processed = mu_false;
@@ -3283,8 +3519,8 @@ mu_hs = mu_HT_EE_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 1;
-mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
 mu_Send ( mu_SnpInv, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_owner = mu_msg.mu_src;
 break;
 case mu_RdShared:
 mu_hs = mu_HT_ES_AD;
@@ -3293,8 +3529,8 @@ mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 1;
 mu_AddToSharersList ( mu_msg.mu_src, mu_h );
 mu_AddToSharersList ( mu_HomeNodes[mu_h].mu_owner, mu_h );
-mu_HomeNodes[mu_h].mu_owner.undefine();
 mu_Send ( mu_SnpData, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_owner.undefine();
 break;
 case mu_RdAny:
 mu_hs = mu_HT_ES_AD;
@@ -3303,10 +3539,16 @@ mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 1;
 mu_AddToSharersList ( mu_msg.mu_src, mu_h );
 mu_AddToSharersList ( mu_HomeNodes[mu_h].mu_owner, mu_h );
-mu_HomeNodes[mu_h].mu_owner.undefine();
 mu_Send ( mu_SnpData, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_owner.undefine();
 break;
 case mu_RdOwnNoData:
+mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
+mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
+mu_HomeNodes[mu_h].mu_request_pre = 1;
+if ( !((mu_HomeNodes[mu_h].mu_requester) != (mu_HomeNodes[mu_h].mu_owner)) ) Error.Error("Assertion failed: H_E should not receive RdOwnNoData from its owner");
+mu_hs = mu_HT_EE_AD;
+mu_Send ( mu_SnpData, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 break;
 case mu_ItoMWr:
 mu_hs = mu_HT_EE_AD;
@@ -3329,22 +3571,22 @@ mu_hs = mu_HT_EI_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 1;
-mu_HomeNodes[mu_h].mu_owner.undefine();
 mu_Send ( mu_SnpInv, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_owner.undefine();
 break;
 case mu_CleanEvict:
 mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
-mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_cqid, 1 );
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 break;
 case mu_DirtyEvict:
 mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
-mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_cqid, 1 );
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 break;
 case mu_CleanEvictNoData:
 mu_hs = mu_H_I;
@@ -3358,11 +3600,9 @@ mu_HomeNodes[mu_h].mu_request_pre = 1;
 mu_Send ( mu_SnpInv, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 break;
 case mu_CacheFlushed:
-mu_hs = mu_HT_EI_AD;
-mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
-mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
-mu_HomeNodes[mu_h].mu_request_pre = 1;
-mu_Send ( mu_SnpInv, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+if ( !((mu_msg.mu_src) != (mu_HomeNodes[mu_h].mu_owner)) ) Error.Error("Assertion failed: CacheFlushed msg from owner");
+mu_hs = mu_H_E;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
@@ -3384,13 +3624,6 @@ mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
 mu_Send ( mu_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 break;
-case mu_CacheFlushed:
-mu_hs = mu_H_I;
-mu_HomeNodes[mu_h].mu_request_type.undefine();
-mu_HomeNodes[mu_h].mu_requester.undefine();
-mu_HomeNodes[mu_h].mu_request_pre.undefine();
-mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
-break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
 break;
@@ -3402,9 +3635,6 @@ case mu_CLFlush:
 mu_hs = mu_HT_EI_D;
 break;
 case mu_WrInv:
-mu_hs = mu_HT_EI_D;
-break;
-case mu_CacheFlushed:
 mu_hs = mu_HT_EI_D;
 break;
 default:
@@ -3419,10 +3649,6 @@ mu_hs = mu_HT_EI_A;
 mu_hv = mu_msg.mu_val;
 break;
 case mu_WrInv:
-mu_hs = mu_HT_EI_A;
-mu_hv = mu_msg.mu_val;
-break;
-case mu_CacheFlushed:
 mu_hs = mu_HT_EI_A;
 mu_hv = mu_msg.mu_val;
 break;
@@ -3489,13 +3715,6 @@ case mu_WrInv:
 mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
 mu_Send ( mu_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
-break;
-case mu_CacheFlushed:
-mu_hs = mu_H_I;
-mu_HomeNodes[mu_h].mu_request_type.undefine();
-mu_HomeNodes[mu_h].mu_requester.undefine();
-mu_HomeNodes[mu_h].mu_request_pre.undefine();
-mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
@@ -3572,13 +3791,6 @@ mu_HomeNodes[mu_h].mu_request_type.undefine();
 mu_HomeNodes[mu_h].mu_requester.undefine();
 mu_HomeNodes[mu_h].mu_request_pre.undefine();
 }
-break;
-case mu_CacheFlushed:
-mu_hs = mu_H_I;
-mu_HomeNodes[mu_h].mu_request_type.undefine();
-mu_HomeNodes[mu_h].mu_requester.undefine();
-mu_HomeNodes[mu_h].mu_request_pre.undefine();
-mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
 case mu_ItoMWr:
 mu_hs = mu_H_I;
@@ -3662,6 +3874,14 @@ mu_HomeNodes[mu_h].mu_request_type.undefine();
 mu_HomeNodes[mu_h].mu_requester.undefine();
 mu_HomeNodes[mu_h].mu_request_pre.undefine();
 break;
+case mu_RdOwnNoData:
+mu_hs = mu_H_E;
+mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
+mu_Send ( mu_Data, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_DATA, mu_HomeNodes[mu_h].mu_val, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
+break;
 case mu_ItoMWr:
 mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
@@ -3685,6 +3905,9 @@ break;
 case mu_RdOwn:
 mu_hs = mu_HT_EE_D;
 break;
+case mu_RdOwnNoData:
+mu_hs = mu_HT_EE_D;
+break;
 case mu_ItoMWr:
 mu_hs = mu_HT_EE_D;
 break;
@@ -3703,6 +3926,10 @@ mu_hs = mu_HT_EE_A;
 mu_hv = mu_msg.mu_val;
 break;
 case mu_RdOwn:
+mu_hs = mu_HT_EE_A;
+mu_hv = mu_msg.mu_val;
+break;
+case mu_RdOwnNoData:
 mu_hs = mu_HT_EE_A;
 mu_hv = mu_msg.mu_val;
 break;
@@ -3800,9 +4027,6 @@ break;
 case mu_RdCurr:
 mu_msg_processed = mu_false;
 break;
-case mu_RdOwn:
-mu_msg_processed = mu_false;
-break;
 case mu_RdShared:
 mu_msg_processed = mu_false;
 break;
@@ -3810,12 +4034,6 @@ case mu_RdAny:
 mu_msg_processed = mu_false;
 break;
 case mu_RdOwnNoData:
-mu_msg_processed = mu_false;
-break;
-case mu_ItoMWr:
-mu_msg_processed = mu_false;
-break;
-case mu_WrCur:
 mu_msg_processed = mu_false;
 break;
 case mu_CLFlush:
@@ -3865,6 +4083,15 @@ break;
 case mu_ItoMWr:
 mu_hs = mu_HT_EI_D;
 mu_HomeNodes[mu_h].mu_request_pre = 0;
+break;
+case mu_RdOwnNoData:
+mu_hs = mu_H_E;
+mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
+mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
+mu_Send ( mu_Data, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_DATA, mu_HomeNodes[mu_h].mu_val, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, 0, 0, mu_1__type_21_undefined_var, 0, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_pre.undefine();
 mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
 mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 break;
@@ -4191,7 +4418,7 @@ else
 {
 mu_SendInvReqToSharers ( mu_msg.mu_src, mu_h, mu_msg );
 mu_RemoveFromSharersList ( mu_msg.mu_src, mu_h );
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SE_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 }
@@ -4206,7 +4433,7 @@ mu_hs = mu_H_E;
 else
 {
 mu_SendInvReqToSharers ( mu_msg.mu_src, mu_h, mu_msg );
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SE_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 }
@@ -4227,7 +4454,7 @@ else
 {
 mu_SendInvReqToSharers ( mu_msg.mu_src, mu_h, mu_msg );
 mu_RemoveFromSharersList ( mu_msg.mu_src, mu_h );
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SE_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 }
@@ -4243,24 +4470,22 @@ mu_hs = mu_H_E;
 else
 {
 mu_SendInvReqToSharers ( mu_msg.mu_src, mu_h, mu_msg );
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SE_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 }
 }
 break;
 case mu_WrCur:
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SI_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
-mu_HomeNodes[mu_h].mu_flag = mu_flag_EI_D;
 mu_SendInvReqToSharers ( mu_HomeNodes[mu_h].mu_owner, mu_h, mu_msg );
 break;
 case mu_ItoMWr:
-mu_hs = mu_HT_SE_A;
+mu_hs = mu_HT_SI_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
-mu_HomeNodes[mu_h].mu_flag = mu_flag_EI_D;
 mu_SendInvReqToSharers ( mu_HomeNodes[mu_h].mu_owner, mu_h, mu_msg );
 break;
 case mu_CleanEvictNoData:
@@ -4277,56 +4502,55 @@ mu_RemoveFromSharersList ( mu_msg.mu_src, mu_h );
 }
 break;
 case mu_CLFlush:
-mu_hs = mu_HT_SI_A;
+mu_hs = mu_HT_SI_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_SendInvReqToSharers ( mu_HomeNodes[mu_h].mu_owner, mu_h, mu_msg );
 break;
 case mu_WrInv:
-mu_hs = mu_HT_SI_A;
+mu_hs = mu_HT_SI_AD;
 mu_HomeNodes[mu_h].mu_requester = mu_msg.mu_src;
 mu_HomeNodes[mu_h].mu_request_type = mu_msg.mu_mtype;
 mu_SendInvReqToSharers ( mu_HomeNodes[mu_h].mu_owner, mu_h, mu_msg );
+break;
+case mu_CacheFlushed:
+if ( !(!(mu_IsSharer( mu_msg.mu_src, mu_h ))) ) Error.Error("Assertion failed: CacheFlushed from sharer");
+mu_hs = mu_H_S;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
 break;
 }
 break;
-case mu_HT_SI_A:
+case mu_HT_SI_AD:
 switch ((int) mu_msg.mu_mtype) {
 case mu_RspIHitSE:
 if ( (mu_cnt) == (0) )
 {
-if ( (mu_HomeNodes[mu_h].mu_request_type) == (mu_WrInv) )
-{
-mu_Send ( mu_WritePull, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
-}
-else
-{
+switch ((int) mu_HomeNodes[mu_h].mu_request_type) {
+case mu_CLFlush:
 mu_hs = mu_H_I;
 mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
-}
-}
-break;
-case mu_Data:
-bool mu__boolexpr33;
-  if (!((mu_HomeNodes[mu_h].mu_flag) == (mu_flag_SI_A))) mu__boolexpr33 = FALSE ;
-  else {
-  mu__boolexpr33 = ((mu_msg.mu_src) == (mu_HomeNodes[mu_h].mu_requester)) ; 
-}
-if ( mu__boolexpr33 )
-{
-mu_hs = mu_H_I;
-mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
-mu_HomeNodes[mu_h].mu_owner = mu_HomeNodes[mu_h].mu_requester;
-mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
 mu_HomeNodes[mu_h].mu_requester.undefine();
 mu_HomeNodes[mu_h].mu_request_type.undefine();
+break;
+case mu_WrInv:
+mu_hs = mu_HT_SI_D;
+mu_Send ( mu_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+break;
+case mu_WrCur:
+mu_hs = mu_HT_SI_D;
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+break;
+case mu_ItoMWr:
+mu_hs = mu_HT_SI_D;
+mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
 }
-else
-{
-mu_msg_processed = mu_false;
 }
 break;
 case mu_RdCurr:
@@ -4391,10 +4615,103 @@ mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
 break;
 }
 break;
-case mu_HT_SE_A:
+case mu_HT_SI_D:
+switch ((int) mu_msg.mu_mtype) {
+case mu_Data:
+switch ((int) mu_HomeNodes[mu_h].mu_request_type) {
+case mu_WrInv:
+mu_hs = mu_H_I;
+mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
+mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+break;
+case mu_WrCur:
+mu_hs = mu_H_I;
+mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+break;
+case mu_ItoMWr:
+mu_hs = mu_H_I;
+mu_HomeNodes[mu_h].mu_val = mu_msg.mu_val;
+mu_HomeNodes[mu_h].mu_requester.undefine();
+mu_HomeNodes[mu_h].mu_request_type.undefine();
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
+break;
+case mu_RdCurr:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwn:
+mu_msg_processed = mu_false;
+break;
+case mu_RdShared:
+mu_msg_processed = mu_false;
+break;
+case mu_RdAny:
+mu_msg_processed = mu_false;
+break;
+case mu_RdOwnNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_ItoMWr:
+mu_msg_processed = mu_false;
+break;
+case mu_WrCur:
+mu_msg_processed = mu_false;
+break;
+case mu_CLFlush:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_DirtyEvict:
+mu_msg_processed = mu_false;
+break;
+case mu_CleanEvictNoData:
+mu_msg_processed = mu_false;
+break;
+case mu_WrInv:
+mu_msg_processed = mu_false;
+break;
+case mu_CacheFlushed:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIHitI:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVHitV:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIHitSE:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSHitSE:
+mu_msg_processed = mu_false;
+break;
+case mu_RspSFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RspIFwdM:
+mu_msg_processed = mu_false;
+break;
+case mu_RspVFwdV:
+mu_msg_processed = mu_false;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
+break;
+}
+break;
+case mu_HT_SE_AD:
 switch ((int) mu_msg.mu_mtype) {
 case mu_RspIHitSE:
-if ( !((mu_HomeNodes[mu_h].mu_request_type.isundefined()) == (mu_false)) ) Error.Error("Assertion failed: In HT_SE_A, request_type should be defined");
+if ( !((mu_HomeNodes[mu_h].mu_request_type.isundefined()) == (mu_false)) ) Error.Error("Assertion failed: In HT_SE_AD, request_type should be defined");
 if ( (mu_cnt) == (0) )
 {
 switch ((int) mu_HomeNodes[mu_h].mu_request_type) {
@@ -4408,22 +4725,6 @@ mu_HomeNodes[mu_h].mu_request_type.undefine();
 break;
 case mu_RdOwnNoData:
 mu_Send ( mu_GO, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_E, 1 );
-mu_HomeNodes[mu_h].mu_owner = mu_HomeNodes[mu_h].mu_requester;
-mu_HomeNodes[mu_h].mu_requester.undefine();
-mu_HomeNodes[mu_h].mu_request_type.undefine();
-break;
-case mu_WrCur:
-if ( !((mu_HomeNodes[mu_h].mu_flag) == (mu_flag_ES_D)) ) Error.Error("Assertion failed: flag_ES_D for ItoMWr");
-mu_hs = mu_H_E;
-mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
-mu_HomeNodes[mu_h].mu_owner = mu_HomeNodes[mu_h].mu_requester;
-mu_HomeNodes[mu_h].mu_requester.undefine();
-mu_HomeNodes[mu_h].mu_request_type.undefine();
-break;
-case mu_ItoMWr:
-if ( !((mu_HomeNodes[mu_h].mu_flag) == (mu_flag_EI_D)) ) Error.Error("Assertion failed: flag_EI_D for ItoMWr");
-mu_hs = mu_H_E;
-mu_Send ( mu_GO_WritePull, mu_HomeNodes[mu_h].mu_requester, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 mu_HomeNodes[mu_h].mu_owner = mu_HomeNodes[mu_h].mu_requester;
 mu_HomeNodes[mu_h].mu_requester.undefine();
 mu_HomeNodes[mu_h].mu_request_type.undefine();
@@ -4514,7 +4815,7 @@ break;
 case mu_DirtyEvict:
 if ( !((mu_msg.mu_src) == (mu_HomeNodes[mu_h].mu_owner)) ) Error.Error("Assertion failed: only owner can request DirtyEvict");
 mu_hs = mu_HT_MI_D;
-mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_cqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_cqid, 1 );
+mu_Send ( mu_GO_WritePull, mu_msg.mu_src, (int)mu_h, mu_H2D_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_msg.mu_uqid, mu_1_UQIDType_undefined_var, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_msg.mu_uqid, 1 );
 mu_HomeNodes[mu_h].mu_owner.undefine();
 break;
 case mu_WrInv:
@@ -4553,6 +4854,11 @@ mu_hs = mu_HT_MS_AD;
 mu_Send ( mu_SnpData, mu_HomeNodes[mu_h].mu_owner, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 mu_AddToSharersList ( mu_msg.mu_src, mu_h );
 mu_HomeNodes[mu_h].mu_owner.undefine();
+break;
+case mu_CacheFlushed:
+if ( !((mu_msg.mu_src) != (mu_HomeNodes[mu_h].mu_owner)) ) Error.Error("Assertion failed: CacheFlushed msg from non-owner");
+mu_hs = mu_H_M;
+mu_Send ( mu_GO, mu_msg.mu_src, (int)mu_h, mu_H2D_REQ, mu_1_Value_undefined_var, mu_msg.mu_addr, mu_1_UQIDType_undefined_var, mu_msg.mu_cqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, (int)mu_I, 1 );
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_h );
@@ -5847,6 +6153,17 @@ mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
 break;
 }
 break;
+case mu_PT_II_D:
+switch ((int) mu_msg.mu_mtype) {
+case mu_Data:
+mu_pv = mu_msg.mu_val;
+mu_ps = mu_P_I;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
 case mu_PT_II_GOI:
 switch ((int) mu_msg.mu_mtype) {
 case mu_GO:
@@ -6012,6 +6329,87 @@ case mu_SnpInv:
 mu_ps = mu_PT_II_GP;
 mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_p, mu_D2H_DATA, mu_pv, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, 0, 0, mu_1__type_20_undefined_var, 0, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 mu_Send ( mu_RspIHitSE, mu_msg.mu_src, (int)mu_p, mu_D2H_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
+case mu_PT_SE_A:
+switch ((int) mu_msg.mu_mtype) {
+case mu_GO:
+if ( !((mu_msg.mu_rspdata) == (mu_E)) ) Error.Error("Assertion failed: The GO received should be GO-E");
+mu_ps = mu_P_E;
+break;
+case mu_SnpCur:
+mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_p, mu_D2H_DATA, mu_pv, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, 0, 0, mu_1__type_20_undefined_var, 0, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_RspSHitSE, mu_msg.mu_src, (int)mu_p, mu_D2H_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+break;
+case mu_SnpInv:
+mu_ps = mu_PT_IE_AD;
+mu_Send ( mu_RspIHitSE, mu_msg.mu_src, (int)mu_p, mu_D2H_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_paddr.undefine();
+mu_pv.undefine();
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
+case mu_PT_SM_GOE:
+switch ((int) mu_msg.mu_mtype) {
+case mu_GO:
+if ( !((mu_msg.mu_rspdata) == (mu_E)) ) Error.Error("Assertion failed: The GO received should be GO-E");
+mu_ps = mu_P_E;
+break;
+case mu_SnpCur:
+mu_Send ( mu_Data, mu_msg.mu_src, (int)mu_p, mu_D2H_DATA, mu_pv, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, 0, 0, mu_1__type_20_undefined_var, 0, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_RspVFwdV, mu_msg.mu_src, (int)mu_p, mu_D2H_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+break;
+case mu_SnpInv:
+mu_ps = mu_PT_IE_AD;
+mu_Send ( mu_RspIHitSE, mu_msg.mu_src, (int)mu_p, mu_D2H_RSP, mu_1_Value_undefined_var, mu_1_Address_undefined_var, mu_1_UQIDType_undefined_var, mu_msg.mu_uqid, mu_1__type_18_undefined_var, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_paddr.undefine();
+mu_pv.undefine();
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
+case mu_PT_IE_AD:
+switch ((int) mu_msg.mu_mtype) {
+case mu_Data:
+mu_ps = mu_PT_IE_A;
+mu_paddr = mu_msg.mu_addr;
+mu_pv = mu_msg.mu_val;
+break;
+case mu_GO:
+if ( !((mu_msg.mu_rspdata) == (mu_E)) ) Error.Error("Assertion failed: The GO received should be GO-E");
+mu_ps = mu_PT_IE_D;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
+case mu_PT_IE_A:
+switch ((int) mu_msg.mu_mtype) {
+case mu_GO:
+if ( !((mu_msg.mu_rspdata) == (mu_E)) ) Error.Error("Assertion failed: The GO received should be GO-E");
+mu_ps = mu_P_E;
+break;
+default:
+mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
+break;
+}
+break;
+case mu_PT_IE_D:
+switch ((int) mu_msg.mu_mtype) {
+case mu_Data:
+mu_ps = mu_P_E;
+mu_paddr = mu_msg.mu_addr;
+mu_pv = mu_msg.mu_val;
 break;
 default:
 mu_ErrorUnhandledMsg ( mu_msg, (int)mu_p );
@@ -6520,7 +6918,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state I, send cache flush, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state I, send CacheFlushed, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -6534,7 +6932,12 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-  return (mu_p.mu_state) == (mu_P_I);
+bool mu__boolexpr33;
+  if (!((mu_p.mu_state) == (mu_P_I))) mu__boolexpr33 = FALSE ;
+  else {
+  mu__boolexpr33 = (mu_p.mu_val.isundefined()) ; 
+}
+  return mu__boolexpr33;
   }
 
   void NextRule(unsigned & what_rule)
@@ -6553,7 +6956,12 @@ public:
       {
         if ( ( TRUE  ) ) {
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-              if ((mu_p.mu_state) == (mu_P_I)) {
+bool mu__boolexpr34;
+  if (!((mu_p.mu_state) == (mu_P_I))) mu__boolexpr34 = FALSE ;
+  else {
+  mu__boolexpr34 = (mu_p.mu_val.isundefined()) ; 
+}
+              if (mu__boolexpr34) {
                 if ( ( TRUE  ) )
                   return;
                 else
@@ -6784,10 +7192,13 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_SM_GOE;
+mu_p.mu_state = mu_PT_SE_A;
 if ( (mu_ad) == (0) )
 {
 mu_Send ( mu_RdOwnNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+}
+else
+{
 mu_Send ( mu_RdOwnNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
   };
@@ -6814,7 +7225,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state S, send RdOwnNoData, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state S, send CleanEvictNoData, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -6880,14 +7291,14 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_SM_AD;
+mu_p.mu_state = mu_PT_SI_GOI;
 if ( (mu_ad) == (0) )
 {
-mu_Send ( mu_RdOwnNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_CleanEvictNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
 else
 {
-mu_Send ( mu_RdOwnNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_CleanEvictNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
   };
 
@@ -6913,7 +7324,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state S, send CleanEvictNoData, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state S, send CleanEvict, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -6979,14 +7390,14 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_SI_GOI;
+mu_p.mu_state = mu_PT_SI_GP;
 if ( (mu_ad) == (0) )
 {
-mu_Send ( mu_CleanEvictNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_CleanEvict, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
 else
 {
-mu_Send ( mu_CleanEvictNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_CleanEvict, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
   };
 
@@ -7012,7 +7423,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state S, send CleanEvict, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state I, send RdCurr, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -7026,7 +7437,7 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-  return (mu_p.mu_state) == (mu_P_S);
+  return (mu_p.mu_state) == (mu_P_I);
   }
 
   void NextRule(unsigned & what_rule)
@@ -7045,7 +7456,7 @@ public:
       {
         if ( ( TRUE  ) ) {
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-              if ((mu_p.mu_state) == (mu_P_S)) {
+              if ((mu_p.mu_state) == (mu_P_I)) {
                 if ( ( TRUE  ) )
                   return;
                 else
@@ -7078,14 +7489,14 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_SI_GP;
+mu_p.mu_state = mu_PT_II_D;
 if ( (mu_ad) == (0) )
 {
-mu_Send ( mu_CleanEvict, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_RdCurr, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
 else
 {
-mu_Send ( mu_CleanEvict, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+mu_Send ( mu_RdCurr, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
   };
 
@@ -7111,7 +7522,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state I, send RdCurr, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state I, send RdShared, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -7177,105 +7588,6 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_P_I;
-if ( (mu_ad) == (0) )
-{
-mu_Send ( mu_RdCurr, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-else
-{
-mu_Send ( mu_RdCurr, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-  };
-
-  bool UnFair()
-  { return FALSE; }
-};
-/******************** RuleBase11 ********************/
-class RuleBase11
-{
-public:
-  int Priority()
-  {
-    return 0;
-  }
-  char * Name(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    return tsprintf("device in state I, send RdShared, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
-  }
-  bool Condition(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-  return (mu_p.mu_state) == (mu_P_I);
-  }
-
-  void NextRule(unsigned & what_rule)
-  {
-    unsigned r = what_rule - 350;
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    while (what_rule < 368 )
-      {
-        if ( ( TRUE  ) ) {
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-              if ((mu_p.mu_state) == (mu_P_I)) {
-                if ( ( TRUE  ) )
-                  return;
-                else
-                  what_rule++;
-              }
-              else
-                what_rule += 3;
-        }
-        else
-          what_rule += 3;
-    r = what_rule - 350;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    }
-  }
-
-  void Code(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
 mu_p.mu_state = mu_PT_IS_AD;
 if ( (mu_ad) == (0) )
 {
@@ -7290,8 +7602,8 @@ mu_Send ( mu_RdShared, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefine
   bool UnFair()
   { return FALSE; }
 };
-/******************** RuleBase12 ********************/
-class RuleBase12
+/******************** RuleBase11 ********************/
+class RuleBase11
 {
 public:
   int Priority()
@@ -7334,7 +7646,7 @@ public:
 
   void NextRule(unsigned & what_rule)
   {
-    unsigned r = what_rule - 368;
+    unsigned r = what_rule - 350;
     static mu_1_Address mu_ad;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
@@ -7347,7 +7659,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    while (what_rule < 422 )
+    while (what_rule < 404 )
       {
         if ( ( TRUE  ) ) {
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
@@ -7362,7 +7674,7 @@ public:
         }
         else
           what_rule += 9;
-    r = what_rule - 368;
+    r = what_rule - 350;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
     mu_id.value((r % 1) + 9);
@@ -7404,8 +7716,8 @@ mu_Send ( mu_ItoMWr, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_
   bool UnFair()
   { return FALSE; }
 };
-/******************** RuleBase13 ********************/
-class RuleBase13
+/******************** RuleBase12 ********************/
+class RuleBase12
 {
 public:
   int Priority()
@@ -7442,7 +7754,7 @@ public:
 
   void NextRule(unsigned & what_rule)
   {
-    unsigned r = what_rule - 422;
+    unsigned r = what_rule - 404;
     static mu_1_Address mu_ad;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
@@ -7452,7 +7764,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    while (what_rule < 440 )
+    while (what_rule < 422 )
       {
         if ( ( TRUE  ) ) {
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
@@ -7467,7 +7779,7 @@ public:
         }
         else
           what_rule += 3;
-    r = what_rule - 422;
+    r = what_rule - 404;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
     mu_id.value((r % 1) + 9);
@@ -7503,6 +7815,107 @@ mu_Send ( mu_WrCur, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_v
   bool UnFair()
   { return FALSE; }
 };
+/******************** RuleBase13 ********************/
+class RuleBase13
+{
+public:
+  int Priority()
+  {
+    return 0;
+  }
+  char * Name(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    return tsprintf("device in state E, send CleanEvictNoData, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+  }
+  bool Condition(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+  return (mu_p.mu_state) == (mu_P_E);
+  }
+
+  void NextRule(unsigned & what_rule)
+  {
+    unsigned r = what_rule - 422;
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    while (what_rule < 440 )
+      {
+        if ( ( TRUE  ) ) {
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+              if ((mu_p.mu_state) == (mu_P_E)) {
+                if ( ( TRUE  ) )
+                  return;
+                else
+                  what_rule++;
+              }
+              else
+                what_rule += 3;
+        }
+        else
+          what_rule += 3;
+    r = what_rule - 422;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    }
+  }
+
+  void Code(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+mu_p.mu_state = mu_PT_EI_GOI;
+if ( (mu_ad) == (0) )
+{
+mu_Send ( mu_CleanEvictNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+}
+else
+{
+mu_Send ( mu_CleanEvictNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+}
+mu_p.mu_val.undefine();
+mu_p.mu_addr.undefine();
+  };
+
+  bool UnFair()
+  { return FALSE; }
+};
 /******************** RuleBase14 ********************/
 class RuleBase14
 {
@@ -7522,7 +7935,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state E, send CleanEvictNoData, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state E, send CleanEvict, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -7588,107 +8001,6 @@ public:
     mu_n.value((r % 6) + 1);
     r = r / 6;
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_EI_GOI;
-mu_p.mu_val.undefine();
-mu_p.mu_addr.undefine();
-if ( (mu_ad) == (0) )
-{
-mu_Send ( mu_CleanEvictNoData, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-else
-{
-mu_Send ( mu_CleanEvictNoData, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-  };
-
-  bool UnFair()
-  { return FALSE; }
-};
-/******************** RuleBase15 ********************/
-class RuleBase15
-{
-public:
-  int Priority()
-  {
-    return 0;
-  }
-  char * Name(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    return tsprintf("device in state E, send CleanEvict, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
-  }
-  bool Condition(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-  return (mu_p.mu_state) == (mu_P_E);
-  }
-
-  void NextRule(unsigned & what_rule)
-  {
-    unsigned r = what_rule - 458;
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    while (what_rule < 476 )
-      {
-        if ( ( TRUE  ) ) {
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-              if ((mu_p.mu_state) == (mu_P_E)) {
-                if ( ( TRUE  ) )
-                  return;
-                else
-                  what_rule++;
-              }
-              else
-                what_rule += 3;
-        }
-        else
-          what_rule += 3;
-    r = what_rule - 458;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    }
-  }
-
-  void Code(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
 mu_p.mu_state = mu_PT_EI_GP;
 if ( (mu_ad) == (0) )
 {
@@ -7703,8 +8015,8 @@ mu_Send ( mu_CleanEvict, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefi
   bool UnFair()
   { return FALSE; }
 };
-/******************** RuleBase16 ********************/
-class RuleBase16
+/******************** RuleBase15 ********************/
+class RuleBase15
 {
 public:
   int Priority()
@@ -7747,7 +8059,7 @@ public:
 
   void NextRule(unsigned & what_rule)
   {
-    unsigned r = what_rule - 476;
+    unsigned r = what_rule - 458;
     static mu_1_Address mu_ad;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
@@ -7760,7 +8072,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    while (what_rule < 530 )
+    while (what_rule < 512 )
       {
         if ( ( TRUE  ) ) {
   mu_1_ProcState& mu_p = mu_Procs[mu_n];
@@ -7775,7 +8087,7 @@ public:
         }
         else
           what_rule += 9;
-    r = what_rule - 476;
+    r = what_rule - 458;
     mu_ad.value((r % 3) + 0);
     r = r / 3;
     mu_id.value((r % 1) + 9);
@@ -7817,6 +8129,106 @@ mu_Send ( mu_WrInv, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_v
   bool UnFair()
   { return FALSE; }
 };
+/******************** RuleBase16 ********************/
+class RuleBase16
+{
+public:
+  int Priority()
+  {
+    return 0;
+  }
+  char * Name(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    return tsprintf("device in state I, send RdAny, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+  }
+  bool Condition(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+  return (mu_p.mu_state) == (mu_P_I);
+  }
+
+  void NextRule(unsigned & what_rule)
+  {
+    unsigned r = what_rule - 512;
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    while (what_rule < 530 )
+      {
+        if ( ( TRUE  ) ) {
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+              if ((mu_p.mu_state) == (mu_P_I)) {
+                if ( ( TRUE  ) )
+                  return;
+                else
+                  what_rule++;
+              }
+              else
+                what_rule += 3;
+        }
+        else
+          what_rule += 3;
+    r = what_rule - 512;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+    }
+  }
+
+  void Code(unsigned r)
+  {
+    static mu_1_Address mu_ad;
+    mu_ad.value((r % 3) + 0);
+    r = r / 3;
+    static mu_1_UQIDType mu_id;
+    mu_id.value((r % 1) + 9);
+    r = r / 1;
+    static mu_1_Proc mu_n;
+    mu_n.value((r % 6) + 1);
+    r = r / 6;
+  mu_1_ProcState& mu_p = mu_Procs[mu_n];
+mu_p.mu_state = mu_PT_IM_AD;
+mu_p.mu_addr = mu_ad;
+if ( (mu_ad) == (0) )
+{
+mu_Send ( mu_RdAny, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+}
+else
+{
+mu_Send ( mu_RdAny, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
+}
+  };
+
+  bool UnFair()
+  { return FALSE; }
+};
 /******************** RuleBase17 ********************/
 class RuleBase17
 {
@@ -7836,7 +8248,7 @@ public:
     static mu_1_Proc mu_n;
     mu_n.value((r % 6) + 1);
     r = r / 6;
-    return tsprintf("device in state I, send RdAny, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
+    return tsprintf("device in state I, send RdOwn, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
   }
   bool Condition(unsigned r)
   {
@@ -7906,106 +8318,6 @@ mu_p.mu_state = mu_PT_IM_AD;
 mu_p.mu_addr = mu_ad;
 if ( (mu_ad) == (0) )
 {
-mu_Send ( mu_RdAny, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-else
-{
-mu_Send ( mu_RdAny, (int)mu_Home1, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
-}
-  };
-
-  bool UnFair()
-  { return FALSE; }
-};
-/******************** RuleBase18 ********************/
-class RuleBase18
-{
-public:
-  int Priority()
-  {
-    return 0;
-  }
-  char * Name(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    return tsprintf("device in state I, send RdOwn, ad:%s, id:%s, n:%s", mu_ad.Name(), mu_id.Name(), mu_n.Name());
-  }
-  bool Condition(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-  return (mu_p.mu_state) == (mu_P_I);
-  }
-
-  void NextRule(unsigned & what_rule)
-  {
-    unsigned r = what_rule - 548;
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    while (what_rule < 566 )
-      {
-        if ( ( TRUE  ) ) {
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-              if ((mu_p.mu_state) == (mu_P_I)) {
-                if ( ( TRUE  ) )
-                  return;
-                else
-                  what_rule++;
-              }
-              else
-                what_rule += 3;
-        }
-        else
-          what_rule += 3;
-    r = what_rule - 548;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-    }
-  }
-
-  void Code(unsigned r)
-  {
-    static mu_1_Address mu_ad;
-    mu_ad.value((r % 3) + 0);
-    r = r / 3;
-    static mu_1_UQIDType mu_id;
-    mu_id.value((r % 1) + 9);
-    r = r / 1;
-    static mu_1_Proc mu_n;
-    mu_n.value((r % 6) + 1);
-    r = r / 6;
-  mu_1_ProcState& mu_p = mu_Procs[mu_n];
-mu_p.mu_state = mu_PT_IM_AD;
-mu_p.mu_addr = mu_ad;
-if ( (mu_ad) == (0) )
-{
 mu_Send ( mu_RdOwn, (int)mu_Home0, (int)mu_n, mu_D2H_REQ, mu_1_Value_undefined_var, mu_ad, mu_id, mu_1_UQIDType_undefined_var, 0, mu_1__type_19_undefined_var, mu_1__type_20_undefined_var, mu_1__type_21_undefined_var, mu_1__type_22_undefined_var, mu_1_RspData_undefined_var, mu_1__type_23_undefined_var );
 }
 else
@@ -8037,7 +8349,6 @@ class NextStateGenerator
   RuleBase15 R15;
   RuleBase16 R16;
   RuleBase17 R17;
-  RuleBase18 R18;
 public:
 void SetNextEnabledRule(unsigned & what_rule)
 {
@@ -8075,10 +8386,10 @@ void SetNextEnabledRule(unsigned & what_rule)
   if (what_rule>=332 && what_rule<350)
     { R10.NextRule(what_rule);
       if (what_rule<350) return; }
-  if (what_rule>=350 && what_rule<368)
+  if (what_rule>=350 && what_rule<404)
     { R11.NextRule(what_rule);
-      if (what_rule<368) return; }
-  if (what_rule>=368 && what_rule<422)
+      if (what_rule<404) return; }
+  if (what_rule>=404 && what_rule<422)
     { R12.NextRule(what_rule);
       if (what_rule<422) return; }
   if (what_rule>=422 && what_rule<440)
@@ -8087,18 +8398,15 @@ void SetNextEnabledRule(unsigned & what_rule)
   if (what_rule>=440 && what_rule<458)
     { R14.NextRule(what_rule);
       if (what_rule<458) return; }
-  if (what_rule>=458 && what_rule<476)
+  if (what_rule>=458 && what_rule<512)
     { R15.NextRule(what_rule);
-      if (what_rule<476) return; }
-  if (what_rule>=476 && what_rule<530)
+      if (what_rule<512) return; }
+  if (what_rule>=512 && what_rule<530)
     { R16.NextRule(what_rule);
       if (what_rule<530) return; }
   if (what_rule>=530 && what_rule<548)
     { R17.NextRule(what_rule);
       if (what_rule<548) return; }
-  if (what_rule>=548 && what_rule<566)
-    { R18.NextRule(what_rule);
-      if (what_rule<566) return; }
 }
 bool Condition(unsigned r)
 {
@@ -8114,14 +8422,13 @@ bool Condition(unsigned r)
   if (r>=296 && r<=313) return R8.Condition(r-296);
   if (r>=314 && r<=331) return R9.Condition(r-314);
   if (r>=332 && r<=349) return R10.Condition(r-332);
-  if (r>=350 && r<=367) return R11.Condition(r-350);
-  if (r>=368 && r<=421) return R12.Condition(r-368);
+  if (r>=350 && r<=403) return R11.Condition(r-350);
+  if (r>=404 && r<=421) return R12.Condition(r-404);
   if (r>=422 && r<=439) return R13.Condition(r-422);
   if (r>=440 && r<=457) return R14.Condition(r-440);
-  if (r>=458 && r<=475) return R15.Condition(r-458);
-  if (r>=476 && r<=529) return R16.Condition(r-476);
+  if (r>=458 && r<=511) return R15.Condition(r-458);
+  if (r>=512 && r<=529) return R16.Condition(r-512);
   if (r>=530 && r<=547) return R17.Condition(r-530);
-  if (r>=548 && r<=565) return R18.Condition(r-548);
 Error.Notrace("Internal: NextStateGenerator -- checking condition for nonexisting rule.");
 }
 void Code(unsigned r)
@@ -8137,14 +8444,13 @@ void Code(unsigned r)
   if (r>=296 && r<=313) { R8.Code(r-296); return; } 
   if (r>=314 && r<=331) { R9.Code(r-314); return; } 
   if (r>=332 && r<=349) { R10.Code(r-332); return; } 
-  if (r>=350 && r<=367) { R11.Code(r-350); return; } 
-  if (r>=368 && r<=421) { R12.Code(r-368); return; } 
+  if (r>=350 && r<=403) { R11.Code(r-350); return; } 
+  if (r>=404 && r<=421) { R12.Code(r-404); return; } 
   if (r>=422 && r<=439) { R13.Code(r-422); return; } 
   if (r>=440 && r<=457) { R14.Code(r-440); return; } 
-  if (r>=458 && r<=475) { R15.Code(r-458); return; } 
-  if (r>=476 && r<=529) { R16.Code(r-476); return; } 
+  if (r>=458 && r<=511) { R15.Code(r-458); return; } 
+  if (r>=512 && r<=529) { R16.Code(r-512); return; } 
   if (r>=530 && r<=547) { R17.Code(r-530); return; } 
-  if (r>=548 && r<=565) { R18.Code(r-548); return; } 
 }
 int Priority(unsigned short r)
 {
@@ -8159,14 +8465,13 @@ int Priority(unsigned short r)
   if (r>=296 && r<=313) { return R8.Priority(); } 
   if (r>=314 && r<=331) { return R9.Priority(); } 
   if (r>=332 && r<=349) { return R10.Priority(); } 
-  if (r>=350 && r<=367) { return R11.Priority(); } 
-  if (r>=368 && r<=421) { return R12.Priority(); } 
+  if (r>=350 && r<=403) { return R11.Priority(); } 
+  if (r>=404 && r<=421) { return R12.Priority(); } 
   if (r>=422 && r<=439) { return R13.Priority(); } 
   if (r>=440 && r<=457) { return R14.Priority(); } 
-  if (r>=458 && r<=475) { return R15.Priority(); } 
-  if (r>=476 && r<=529) { return R16.Priority(); } 
+  if (r>=458 && r<=511) { return R15.Priority(); } 
+  if (r>=512 && r<=529) { return R16.Priority(); } 
   if (r>=530 && r<=547) { return R17.Priority(); } 
-  if (r>=548 && r<=565) { return R18.Priority(); } 
 }
 char * Name(unsigned r)
 {
@@ -8181,23 +8486,22 @@ char * Name(unsigned r)
   if (r>=296 && r<=313) return R8.Name(r-296);
   if (r>=314 && r<=331) return R9.Name(r-314);
   if (r>=332 && r<=349) return R10.Name(r-332);
-  if (r>=350 && r<=367) return R11.Name(r-350);
-  if (r>=368 && r<=421) return R12.Name(r-368);
+  if (r>=350 && r<=403) return R11.Name(r-350);
+  if (r>=404 && r<=421) return R12.Name(r-404);
   if (r>=422 && r<=439) return R13.Name(r-422);
   if (r>=440 && r<=457) return R14.Name(r-440);
-  if (r>=458 && r<=475) return R15.Name(r-458);
-  if (r>=476 && r<=529) return R16.Name(r-476);
+  if (r>=458 && r<=511) return R15.Name(r-458);
+  if (r>=512 && r<=529) return R16.Name(r-512);
   if (r>=530 && r<=547) return R17.Name(r-530);
-  if (r>=548 && r<=565) return R18.Name(r-548);
   return NULL;
 }
 };
-const unsigned numrules = 566;
+const unsigned numrules = 548;
 
 /********************
   parameter
  ********************/
-#define RULES_IN_WORLD 566
+#define RULES_IN_WORLD 548
 
 
 /********************
@@ -8258,231 +8562,231 @@ unsigned short StartStateManager::numstartstates = 1;
 /********************
   Invariant records
  ********************/
-int mu__invariant_34() // Invariant "addr 1 values in shared state match memory"
+int mu__invariant_35() // Invariant "addr 1 values in shared state match memory"
 {
-bool mu__quant35; 
-mu__quant35 = TRUE;
+bool mu__quant36; 
+mu__quant36 = TRUE;
 {
 for(int mu_n = 1; mu_n <= 6; mu_n++) {
-bool mu__boolexpr36;
 bool mu__boolexpr37;
 bool mu__boolexpr38;
-  if (!((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_S))) mu__boolexpr38 = FALSE ;
+bool mu__boolexpr39;
+  if (!((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_S))) mu__boolexpr39 = FALSE ;
   else {
-  mu__boolexpr38 = ((mu_Procs[mu_n].mu_state) == (mu_P_S)) ; 
+  mu__boolexpr39 = ((mu_Procs[mu_n].mu_state) == (mu_P_S)) ; 
 }
-  if (!(mu__boolexpr38)) mu__boolexpr37 = FALSE ;
+  if (!(mu__boolexpr39)) mu__boolexpr38 = FALSE ;
   else {
-  mu__boolexpr37 = ((mu_Procs[mu_n].mu_addr) == (1)) ; 
+  mu__boolexpr38 = ((mu_Procs[mu_n].mu_addr) == (1)) ; 
 }
-  if (!(mu__boolexpr37)) mu__boolexpr36 = TRUE ;
+  if (!(mu__boolexpr38)) mu__boolexpr37 = TRUE ;
   else {
-  mu__boolexpr36 = ((mu_HomeNodes[mu_Home1].mu_val) == (mu_Procs[mu_n].mu_val)) ; 
+  mu__boolexpr37 = ((mu_HomeNodes[mu_Home1].mu_val) == (mu_Procs[mu_n].mu_val)) ; 
 }
-if ( !(mu__boolexpr36) )
-  { mu__quant35 = FALSE; break; }
+if ( !(mu__boolexpr37) )
+  { mu__quant36 = FALSE; break; }
 };
 };
-return mu__quant35;
+return mu__quant36;
 };
 
-bool mu__condition_39() // Condition for Rule "addr 1 values in shared state match memory"
+bool mu__condition_40() // Condition for Rule "addr 1 values in shared state match memory"
 {
-  return mu__invariant_34( );
+  return mu__invariant_35( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_40() // Invariant "addr 0 values in shared state match memory"
+int mu__invariant_41() // Invariant "addr 0 values in shared state match memory"
 {
-bool mu__quant41; 
-mu__quant41 = TRUE;
+bool mu__quant42; 
+mu__quant42 = TRUE;
 {
 for(int mu_n = 1; mu_n <= 6; mu_n++) {
-bool mu__boolexpr42;
 bool mu__boolexpr43;
 bool mu__boolexpr44;
-  if (!((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_S))) mu__boolexpr44 = FALSE ;
+bool mu__boolexpr45;
+  if (!((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_S))) mu__boolexpr45 = FALSE ;
   else {
-  mu__boolexpr44 = ((mu_Procs[mu_n].mu_state) == (mu_P_S)) ; 
+  mu__boolexpr45 = ((mu_Procs[mu_n].mu_state) == (mu_P_S)) ; 
 }
-  if (!(mu__boolexpr44)) mu__boolexpr43 = FALSE ;
+  if (!(mu__boolexpr45)) mu__boolexpr44 = FALSE ;
   else {
-  mu__boolexpr43 = ((mu_Procs[mu_n].mu_addr) == (0)) ; 
+  mu__boolexpr44 = ((mu_Procs[mu_n].mu_addr) == (0)) ; 
 }
-  if (!(mu__boolexpr43)) mu__boolexpr42 = TRUE ;
+  if (!(mu__boolexpr44)) mu__boolexpr43 = TRUE ;
   else {
-  mu__boolexpr42 = ((mu_HomeNodes[mu_Home0].mu_val) == (mu_Procs[mu_n].mu_val)) ; 
+  mu__boolexpr43 = ((mu_HomeNodes[mu_Home0].mu_val) == (mu_Procs[mu_n].mu_val)) ; 
 }
-if ( !(mu__boolexpr42) )
-  { mu__quant41 = FALSE; break; }
+if ( !(mu__boolexpr43) )
+  { mu__quant42 = FALSE; break; }
 };
 };
-return mu__quant41;
+return mu__quant42;
 };
 
-bool mu__condition_45() // Condition for Rule "addr 0 values in shared state match memory"
+bool mu__condition_46() // Condition for Rule "addr 0 values in shared state match memory"
 {
-  return mu__invariant_40( );
+  return mu__invariant_41( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_46() // Invariant "Invalid implies empty sharer list"
+int mu__invariant_47() // Invariant "Invalid implies empty sharer list"
 {
-bool mu__quant47; 
-mu__quant47 = TRUE;
+bool mu__quant48; 
+mu__quant48 = TRUE;
 {
 for(int mu_h = 7; mu_h <= 8; mu_h++) {
-bool mu__boolexpr48;
-  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_I))) mu__boolexpr48 = TRUE ;
+bool mu__boolexpr49;
+  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_I))) mu__boolexpr49 = TRUE ;
   else {
 /*** begin multisetcount 7 declaration ***/
-  int mu__intexpr49 = 0;
+  int mu__intexpr50 = 0;
   {
   mu_1__type_8_id mu_i;
   for (mu_i = 0; ; mu_i=mu_i+1)
     {
       if (mu_HomeNodes[mu_h].mu_sharers.valid[(int)mu_i].value())
         {
-          if ( mu_true ) mu__intexpr49++;
+          if ( mu_true ) mu__intexpr50++;
         }
       if (mu_i == 6-1) break;
     }
   }
 /*** end multisetcount 7 declaration ***/
-  mu__boolexpr48 = ((mu__intexpr49) == (0)) ; 
+  mu__boolexpr49 = ((mu__intexpr50) == (0)) ; 
 }
-if ( !(mu__boolexpr48) )
-  { mu__quant47 = FALSE; break; }
+if ( !(mu__boolexpr49) )
+  { mu__quant48 = FALSE; break; }
 };
 };
-return mu__quant47;
+return mu__quant48;
 };
 
-bool mu__condition_50() // Condition for Rule "Invalid implies empty sharer list"
+bool mu__condition_51() // Condition for Rule "Invalid implies empty sharer list"
 {
-  return mu__invariant_46( );
+  return mu__invariant_47( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_51() // Invariant "modified implies empty sharers list"
+int mu__invariant_52() // Invariant "modified implies empty sharers list"
 {
-bool mu__quant52; 
-mu__quant52 = TRUE;
+bool mu__quant53; 
+mu__quant53 = TRUE;
 {
 for(int mu_h = 7; mu_h <= 8; mu_h++) {
-bool mu__boolexpr53;
-  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_M))) mu__boolexpr53 = TRUE ;
+bool mu__boolexpr54;
+  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_M))) mu__boolexpr54 = TRUE ;
   else {
 /*** begin multisetcount 6 declaration ***/
-  int mu__intexpr54 = 0;
+  int mu__intexpr55 = 0;
   {
   mu_1__type_8_id mu_i;
   for (mu_i = 0; ; mu_i=mu_i+1)
     {
       if (mu_HomeNodes[mu_h].mu_sharers.valid[(int)mu_i].value())
         {
-          if ( mu_true ) mu__intexpr54++;
+          if ( mu_true ) mu__intexpr55++;
         }
       if (mu_i == 6-1) break;
     }
   }
 /*** end multisetcount 6 declaration ***/
-  mu__boolexpr53 = ((mu__intexpr54) == (0)) ; 
+  mu__boolexpr54 = ((mu__intexpr55) == (0)) ; 
 }
-if ( !(mu__boolexpr53) )
-  { mu__quant52 = FALSE; break; }
+if ( !(mu__boolexpr54) )
+  { mu__quant53 = FALSE; break; }
 };
 };
-return mu__quant52;
+return mu__quant53;
 };
 
-bool mu__condition_55() // Condition for Rule "modified implies empty sharers list"
+bool mu__condition_56() // Condition for Rule "modified implies empty sharers list"
 {
-  return mu__invariant_51( );
+  return mu__invariant_52( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_56() // Invariant "value in addr1 matches value of last write, when invalid"
+int mu__invariant_57() // Invariant "value in addr1 matches value of last write, when invalid"
 {
-bool mu__boolexpr57;
 bool mu__boolexpr58;
-  if ((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_I)) mu__boolexpr58 = TRUE ;
+bool mu__boolexpr59;
+  if ((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_I)) mu__boolexpr59 = TRUE ;
   else {
-  mu__boolexpr58 = ((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_S)) ; 
+  mu__boolexpr59 = ((mu_HomeNodes[mu_Home1].mu_state) == (mu_H_S)) ; 
 }
-  if (!(mu__boolexpr58)) mu__boolexpr57 = TRUE ;
+  if (!(mu__boolexpr59)) mu__boolexpr58 = TRUE ;
   else {
-  mu__boolexpr57 = ((mu_HomeNodes[mu_Home1].mu_val) == (mu_LastWrite1)) ; 
+  mu__boolexpr58 = ((mu_HomeNodes[mu_Home1].mu_val) == (mu_LastWrite1)) ; 
 }
-return mu__boolexpr57;
+return mu__boolexpr58;
 };
 
-bool mu__condition_59() // Condition for Rule "value in addr1 matches value of last write, when invalid"
+bool mu__condition_60() // Condition for Rule "value in addr1 matches value of last write, when invalid"
 {
-  return mu__invariant_56( );
+  return mu__invariant_57( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_60() // Invariant "value in addr0 matches value of last write, when invalid"
+int mu__invariant_61() // Invariant "value in addr0 matches value of last write, when invalid"
 {
-bool mu__boolexpr61;
 bool mu__boolexpr62;
-  if ((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_I)) mu__boolexpr62 = TRUE ;
+bool mu__boolexpr63;
+  if ((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_I)) mu__boolexpr63 = TRUE ;
   else {
-  mu__boolexpr62 = ((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_S)) ; 
+  mu__boolexpr63 = ((mu_HomeNodes[mu_Home0].mu_state) == (mu_H_S)) ; 
 }
-  if (!(mu__boolexpr62)) mu__boolexpr61 = TRUE ;
+  if (!(mu__boolexpr63)) mu__boolexpr62 = TRUE ;
   else {
-  mu__boolexpr61 = ((mu_HomeNodes[mu_Home0].mu_val) == (mu_LastWrite0)) ; 
+  mu__boolexpr62 = ((mu_HomeNodes[mu_Home0].mu_val) == (mu_LastWrite0)) ; 
 }
-return mu__boolexpr61;
+return mu__boolexpr62;
 };
 
-bool mu__condition_63() // Condition for Rule "value in addr0 matches value of last write, when invalid"
+bool mu__condition_64() // Condition for Rule "value in addr0 matches value of last write, when invalid"
 {
-  return mu__invariant_60( );
+  return mu__invariant_61( );
 }
 
 /**** end rule declaration ****/
 
-int mu__invariant_64() // Invariant "Invalid implies empty owner"
+int mu__invariant_65() // Invariant "Invalid implies empty owner"
 {
-bool mu__quant65; 
-mu__quant65 = TRUE;
+bool mu__quant66; 
+mu__quant66 = TRUE;
 {
 for(int mu_h = 7; mu_h <= 8; mu_h++) {
-bool mu__boolexpr66;
-  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_I))) mu__boolexpr66 = TRUE ;
+bool mu__boolexpr67;
+  if (!((mu_HomeNodes[mu_h].mu_state) == (mu_H_I))) mu__boolexpr67 = TRUE ;
   else {
-  mu__boolexpr66 = (mu_HomeNodes[mu_h].mu_owner.isundefined()) ; 
+  mu__boolexpr67 = (mu_HomeNodes[mu_h].mu_owner.isundefined()) ; 
 }
-if ( !(mu__boolexpr66) )
-  { mu__quant65 = FALSE; break; }
+if ( !(mu__boolexpr67) )
+  { mu__quant66 = FALSE; break; }
 };
 };
-return mu__quant65;
+return mu__quant66;
 };
 
-bool mu__condition_67() // Condition for Rule "Invalid implies empty owner"
+bool mu__condition_68() // Condition for Rule "Invalid implies empty owner"
 {
-  return mu__invariant_64( );
+  return mu__invariant_65( );
 }
 
 /**** end rule declaration ****/
 
 const rulerec invariants[] = {
-{"Invalid implies empty owner", &mu__condition_67, NULL, FALSE},
-{"value in addr0 matches value of last write, when invalid", &mu__condition_63, NULL, FALSE},
-{"value in addr1 matches value of last write, when invalid", &mu__condition_59, NULL, FALSE},
-{"modified implies empty sharers list", &mu__condition_55, NULL, FALSE},
-{"Invalid implies empty sharer list", &mu__condition_50, NULL, FALSE},
-{"addr 0 values in shared state match memory", &mu__condition_45, NULL, FALSE},
-{"addr 1 values in shared state match memory", &mu__condition_39, NULL, FALSE},
+{"Invalid implies empty owner", &mu__condition_68, NULL, FALSE},
+{"value in addr0 matches value of last write, when invalid", &mu__condition_64, NULL, FALSE},
+{"value in addr1 matches value of last write, when invalid", &mu__condition_60, NULL, FALSE},
+{"modified implies empty sharers list", &mu__condition_56, NULL, FALSE},
+{"Invalid implies empty sharer list", &mu__condition_51, NULL, FALSE},
+{"addr 0 values in shared state match memory", &mu__condition_46, NULL, FALSE},
+{"addr 1 values in shared state match memory", &mu__condition_40, NULL, FALSE},
 };
 const unsigned short numinvariants = 7;
 

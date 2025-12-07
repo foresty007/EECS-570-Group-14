@@ -11,4 +11,4 @@ set -e
 make msi_opt
 
 # run the simulation with trace verification
-./msi_opt -tv -m 512 > output.txt 2>&1
+./msi_opt -tv -m 8192 > output.txt 2>&1
