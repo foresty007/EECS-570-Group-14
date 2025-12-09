@@ -5,10 +5,10 @@
 set -e
 
 # compile the .m file to C++
-./mu msi_opt.m
+./mu msi_opt.m  
 
 # build the generated C++ code
-make msi_opt
+make msi_opt 
 
 # run the simulation with trace verification
-./msi_opt -tv -m 50000 > output.txt 2>&1
+./msi_opt -tv -m 65536 -p5 > output.txt 2>&1
