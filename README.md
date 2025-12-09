@@ -183,6 +183,8 @@ Adjust this section to match your actual directory names:
 Assuming you have the standard `mu` script from CMurphi and your main model file is `cxl_cache.m`:
 
 ```bash
+#Option 1:
+
 # 1. Compile the Murphi model to C++, then to a binary
 ./mu cxl_cache.m
 
@@ -192,3 +194,7 @@ Assuming you have the standard `mu` script from CMurphi and your main model file
 # 3. (Optional) Grep for invariant violations or deadlocks
 grep -i "Invariant" results/run.log
 grep -i "deadlock"  results/run.log
+
+# Option2:
+
+simply run ./runopt under eecs570_sample/
