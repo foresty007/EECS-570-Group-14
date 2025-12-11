@@ -143,13 +143,7 @@ With CMurphi on a 64-bit machine, the full state space for this configuration wa
 - **States explored:** 10,430,695  
 - **Rules fired:** 40,662,942  
 - **Peak memory usage:** ~50 GB  
-- **Runtime:** ~344.35 s :contentReference[oaicite:11]{index=11}  
-
-Outcomes:
-
-- **No invariant violations** were detected.
-- **No deadlocks** were observed — every non-terminal state had at least one enabled transition.
-- The model therefore **maintains coherence** (including SWMR and data consistency) for all possible interleavings in the modeled configuration.
+- **Runtime:** ~344.35 s 
 
 ---
 
